@@ -1,0 +1,21 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.bank.audit:audit-service >--------------------
+[INFO] Building audit-service 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] The artifact io.quarkus:quarkus-smallrye-reactive-messaging-kafka:jar:3.15.1 has been relocated to io.quarkus:quarkus-messaging-kafka:jar:3.15.1: Update the artifactId in your project build file. Refer to https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.9 for more information.
+[INFO] 
+[INFO] --- quarkus:3.15.1:dev (default-cli) @ audit-service ---
+[INFO] Invoking resources:3.3.1:resources (default-resources) @ audit-service
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Invoking quarkus:3.15.1:generate-code (default) @ audit-service
+[INFO] Invoking compiler:3.13.0:compile (default-compile) @ audit-service
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] Invoking resources:3.3.1:testResources (default-testResources) @ audit-service
+[INFO] skip non existing resourceDirectory /home/darkstar/Workspace/dev/service-payment/audit-service/src/test/resources
+[INFO] Invoking quarkus:3.15.1:generate-code-tests (default) @ audit-service
+[INFO] Invoking compiler:3.13.0:testCompile (default-testCompile) @ audit-service
+[INFO] No sources to compile
+[WARNING] Changed debug port to 41171 because of a port conflict
+Listening for transport dt_socket at address: 41171

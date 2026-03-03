@@ -1,0 +1,10 @@
+__  ____  __  _____   ___  __ ____  ______ 
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/ 
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \   
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/   
+2026-02-17 02:20:07,182 INFO  [io.sma.rea.mes.kafka] (main) SRMSG18229: Configured topics for channel 'audit-events': [payment-audit-log]
+2026-02-17 02:20:07,190 INFO  [io.sma.rea.mes.kafka] (main) SRMSG18214: Key deserializer omitted, using String as default
+2026-02-17 02:20:07,389 INFO  [io.sma.rea.mes.kafka] (smallrye-kafka-consumer-thread-0) SRMSG18257: Kafka consumer kafka-consumer-audit-events, connected to Kafka brokers 'localhost:19092', belongs to the 'audit-service-group' consumer group and is configured to poll records from [payment-audit-log]
+2026-02-17 02:20:07,441 INFO  [io.quarkus] (main) audit-service 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.15.1) started in 1.098s. Listening on: http://0.0.0.0:8083
+2026-02-17 02:20:07,441 INFO  [io.quarkus] (main) Profile prod activated. 
+2026-02-17 02:20:07,441 INFO  [io.quarkus] (main) Installed features: [cdi, kafka-client, messaging, messaging-kafka, micrometer, mongodb-client, mongodb-panache, narayana-jta, opentelemetry, smallrye-context-propagation, smallrye-health, vertx]

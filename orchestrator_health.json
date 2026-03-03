@@ -1,0 +1,30 @@
+{
+    "status": "UP",
+    "checks": [
+        {
+            "name": "SmallRye Reactive Messaging - liveness check",
+            "status": "UP",
+            "data": {
+                "audit-events": "[OK]"
+            }
+        },
+        {
+            "name": "MongoDB connection health check",
+            "status": "UP"
+        },
+        {
+            "name": "SmallRye Reactive Messaging - readiness check",
+            "status": "UP",
+            "data": {
+                "audit-events": "[OK]"
+            }
+        },
+        {
+            "name": "SmallRye Reactive Messaging - startup check",
+            "status": "UP",
+            "data": {
+                "audit-events": "[OK]"
+            }
+        }
+    ]
+}

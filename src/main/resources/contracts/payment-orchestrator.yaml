@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Payment Orchestrator API
+  description: API for coordinating service payments and debt inquiries in the bank's service payment system.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+paths:
+  /debts:
+    get:
+      summary: Inquiry debt for a specific service
+      parameters:
+        - name: service_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: customer_reference
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Debt information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtInfo'
+        '404':
+          description: Debt not found
+        '502':
+          description: Error connecting to service provider
+
+  /payments:
+    post:
+      summary: Execute a service payment
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '201':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '202':
+          description: Payment is being processed (check status later)
+        '400':
+          description: Invalid request
+        '402':
+          description: Insufficient funds
+        '409':
+          description: Duplicate request (Idempotency)
+        '504':
+          description: Gateway Timeout - Payment state undetermined
+
+components:
+  schemas:
+    DebtInfo:
+      type: object
+      properties:
+        service_id:
+          type: string
+        customer_reference:
+          type: string
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+          example: USD
+        due_date:
+          type: string
+          format: date
+        description:
+          type: string
+        target_account:
+          type: string
+
+    PaymentRequest:
+      type: object
+      required:
+        - service_id
+        - customer_reference
+        - amount
+        - account_id
+      properties:
+        service_id:
+          type: string
+        customer_reference:
+          type: string
+        amount:
+          type: number
+          format: double
+        currency:
+          type: string
+        account_id:
+          type: string
+
+    PaymentResponse:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [COMPLETED, PENDING, FAILED]
+        receipt_number:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        endorsement:
+          type: string
