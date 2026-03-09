@@ -7,8 +7,6 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-@RegisterRestClient(configKey = "connector-service")
-@Path("/")
 public interface ServiceConnectorClient {
 
     @POST

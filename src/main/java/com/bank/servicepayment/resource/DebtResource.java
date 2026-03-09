@@ -22,7 +22,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 public class DebtResource {
 
     @Inject
-    @RestClient
     ServiceConnectorClient serviceConnectorClient;
 
     @Inject

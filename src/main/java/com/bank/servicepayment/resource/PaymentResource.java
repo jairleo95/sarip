@@ -43,7 +43,6 @@ public class PaymentResource {
     FinancialService financialService;
 
     @Inject
-    @RestClient
     ServiceConnectorClient serviceConnectorClient;
 
     @Inject

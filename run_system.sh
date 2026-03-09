@@ -37,6 +37,10 @@ wait_for_service "http://localhost:8084/q/health" "Provider Simulator"
 
 echo "--- System is Healthy and Ready ---"
 
+echo "Step 3.5: Seeding test accounts into the database..."
+docker cp seed_accounts.sql payment_db:/tmp/
+docker exec -i payment_db psql -U user -d payment_db -f /tmp/seed_accounts.sql
+
 # 4. Trigger 1-hour traffic simulation
 echo "Step 4: Launching 1-hour traffic simulation (300 TPS)..."
 python3 performance_simulation.py 1
