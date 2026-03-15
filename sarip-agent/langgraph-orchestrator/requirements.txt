@@ -1,0 +1,9 @@
+langgraph
+langchain-core
+langchain-anthropic
+langchain-openai
+pydantic
+python-dotenv
+httpx
+chromadb
+sentence-transformers

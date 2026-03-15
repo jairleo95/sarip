@@ -1,0 +1,18 @@
+[
+  {
+    "id": "TCK-51549",
+    "title": "Claro Gateway Timeout",
+    "description": "Multiple payment attempts are failing with a 504 Gateway Timeout error when processing transactions through the Claro gateway. Affecting approximately 15% of total traffic.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-12T03:54:09.215Z"
+  },
+  {
+    "id": "TCK-25223",
+    "title": "Error de conciliacion",
+    "description": "error en la operacion 1, 2, 3, 4 ,5",
+    "severity": "medium",
+    "status": "reported",
+    "createdAt": "2026-03-15T12:05:49.912Z"
+  }
+]

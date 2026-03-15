@@ -1,0 +1,83 @@
+from langgraph.graph import StateGraph, END
+from state import TicketState
+import agent
+from pii_masker import mask_pii
+import json
+
+# 1. Definir el Grafo Base de LangGraph apuntando a nuestro Pydantic BaseModel
+workflow = StateGraph(TicketState)
+
+# 2. Añadir los Nodos (Agentes Lógicos de agent.py)
+workflow.add_node("router", agent.router_agent)
+workflow.add_node("evidence_collector", agent.evidence_collector)
+workflow.add_node("clasificador", agent.clasificador)
+workflow.add_node("rca_reporter", agent.rca_reporter)
+
+# 3. Definir el flujo Asíncrono Funcional (Edges)
+# Nodo Inicial (Triage)
+workflow.set_entry_point("router")
+
+# Definimos el flujo determinista (Pipeline Causal)
+# (En un futuro v2 de SARIP se podrían usar Conditional Edges dinámicos, pero 
+# el flujo ideal forense es lineal: Evaluar -> Extraer -> Pensar -> Escribir).
+workflow.add_edge("router", "evidence_collector")
+workflow.add_edge("evidence_collector", "clasificador")
+workflow.add_edge("clasificador", "rca_reporter")
+
+# Punto de Salida
+workflow.add_edge("rca_reporter", END)
+
+# 4. Compilar el Grafo
+sarip_app = workflow.compile()
+
+def start_sarip_investigation(raw_ticket_text: str, ticket_id: str):
+    """
+    Función de entrada del sistema principal.
+    Aplica PII Masking antes de iniciar el estado.
+    """
+    print("="*60)
+    print(f"🚀 INICIANDO SARIP LangGraph Execution | TICKET: {ticket_id}")
+    print("="*60)
+    
+    # Capa de Seguridad Inbound 0: Enmascarar Datos Privados (PII)
+    safe_description = mask_pii(raw_ticket_text)
+    print(f"[🛡️ PII Masker] Texto original ofuscado. Previniendo fuga de datos.\n")
+    
+    # Crear el JSON 'Case File' Inicial de Estado
+    initial_state = {
+        "ticket_id": ticket_id,
+        "description": safe_description,
+    }
+    
+    # Ejecutar el grafo. stream() nos permite ver cada nodo conforme termina (Observability)
+    for output in sarip_app.stream(initial_state):
+        for node_name, state in output.items():
+            print(f"✅ Nodo finalizado: {node_name}")
+            print("-" * 40)
+            
+    return state # Estado final consolidado tras correr todos los agentes
+
+if __name__ == "__main__":
+    
+    # CASO DE PRUEBA: "Timeout de la Empresa" o "Reconciliation" (Golden Dataset)
+    # Contiene datos sensibles falsos a ofuscar (correo y cuenta).
+    texto_reclamo = (
+        "Hola mi correo es juan_perez99@gmail.com. "
+        "Ayer hice un pago a Telecom (Claro/Movistar) con mi tarjeta 4555 1111 2222 3333 "
+        "por la operacion op-7489 y aun me figura que debo. "
+        "Mi DNI es 72124567 por favor revisen."
+    )
+    
+    estado_final = start_sarip_investigation(
+        raw_ticket_text=texto_reclamo, 
+        ticket_id="TCK-10029"
+    )
+
+    print("\n" + "="*60)
+    print(f"🎯 INVESTIGACIÓN FINALIZADA. RESUMEN DEL CASE FILE GENERADO:")
+    print("="*60)
+    print(f"RCA Action: {estado_final.get('recommended_action')}")
+    print(f"Score (0-1): {estado_final.get('confidence_score')}")
+    print(f"Requiere Aprobación Humana: {estado_final.get('requires_human_approval')}")
+    print("\nAuditoría Completa de la IA:")
+    print(json.dumps(estado_final.get("audit_trail"), indent=2))
