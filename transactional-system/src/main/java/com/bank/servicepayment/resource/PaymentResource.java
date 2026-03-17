@@ -26,12 +26,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 @Path("/payments")
 @Blocking
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class PaymentResource {
+
+    private static final Logger LOG = Logger.getLogger(PaymentResource.class);
 
     @Inject
     IdempotencyService idempotencyService;
@@ -71,111 +75,115 @@ public class PaymentResource {
         String status = "SUCCESS";
         String serviceId = paymentRequest != null ? paymentRequest.getServiceId() : "unknown";
 
+        MDC.put("service_id", serviceId);
         String idempotencyKey = xIdempotencyKey.toString();
-        System.out.println("[PaymentResource] Processing payment: " + xIdempotencyKey);
-
-        // 1. Check Idempotency
-        String stored = idempotencyService.getStoredResponse(idempotencyKey);
-        if (stored != null) {
-            System.out.println("[PaymentResource] Returning stored response for: " + idempotencyKey);
-            if ("PROCESSING".equals(stored)) {
-                return Response.status(102).build();
-            }
-            try {
-                PaymentResponse cachedResponse = objectMapper.readValue(stored, PaymentResponse.class);
-                return Response.ok(cachedResponse).build();
-            } catch (Exception e) {
-                return Response.serverError().build();
-            }
-        }
-
-        System.out.println("[PaymentResource] Step 2: Marking as processing");
-        // 2. Mark as processing
-        idempotencyService.markAsProcessing(idempotencyKey);
-
-        // 3. Create Transaction record (PENDING)
-        Transaction tx = new Transaction();
-        tx.serviceId = serviceId;
-        tx.customerReference = paymentRequest.getCustomerReference();
-        tx.amount = paymentRequest.getAmount();
-        tx.currency = paymentRequest.getCurrency();
-        tx.idempotencyKey = idempotencyKey;
-        tx.status = "PENDING";
-
-        System.out.println("[PaymentResource] Step 3: Initializing transaction in DB");
-        saveTransactionAtomic(tx);
+        LOG.infof("Processing payment: %s", idempotencyKey);
 
         try {
-            // 4. Financial Integrity: Debit Account & Record Ledger
-            System.out.println(
-                    "[PaymentResource] Step 4: Executing processDebit for Account: " + paymentRequest.getAccountId());
-            financialService.processDebit(
-                    paymentRequest.getAccountId(),
-                    BigDecimal.valueOf(paymentRequest.getAmount()),
-                    tx.id);
-
-            // 5. External Integration (Phase 3): Provider Confirmation
-            System.out.println("[PaymentResource] Step 5: Calling Service Connector Confirmation...");
-
-            ProviderPayRequest providerRequest = new ProviderPayRequest();
-            providerRequest.service_id = tx.serviceId;
-            providerRequest.transaction_id = tx.id.toString();
-            providerRequest.amount = paymentRequest.getAmount();
-            providerRequest.reference = paymentRequest.getCustomerReference();
-
-            ProviderPayResponse providerResponse = serviceConnectorClient.confirmPayment(providerRequest);
-            tx.providerEndorsement = providerResponse.endorsement;
-            System.out.println("[PaymentResource] Provider confirmation received: " + tx.providerEndorsement);
-
-            // 6. Finalize Transaction
-            tx.status = "COMPLETED";
-            tx.receiptNumber = "REC-" + System.currentTimeMillis();
-            tx.updatedAt = LocalDateTime.now();
-
-            PaymentResponse response = new PaymentResponse();
-            response.setTransactionId(tx.id);
-            response.setStatus(PaymentResponse.StatusEnum.valueOf(tx.status));
-            response.setReceiptNumber(tx.receiptNumber);
-            response.setTimestamp(tx.updatedAt.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime());
-            response.setEndorsement(tx.providerEndorsement);
-
-            // 7. Emit Kafka Event
-            eventEmitter.send(new com.bank.servicepayment.event.PaymentSucceededEvent(
-                    tx.id, tx.serviceId, tx.customerReference, tx.amount, tx.currency, tx.updatedAt.toString()));
-
-            // 8. Save final result in Idempotency store
-            idempotencyService.saveResult(idempotencyKey, objectMapper.writeValueAsString(response));
-
-            System.out.println("[PaymentResource] Finalizing transaction status in DB");
-            updateTransactionAtomic(tx);
-
-            auditService.sendAuditEvent("PAYMENT_EXECUTION_SUCCESSFUL", paymentRequest, response,
-                    Map.of("transaction_id", tx.id, "idempotency_key", idempotencyKey));
-
-            return Response.status(Response.Status.CREATED).entity(response).build();
-
-        } catch (Exception e) {
-            System.err.println("[PaymentResource] Error during payment processing: " + e.getMessage());
-            e.printStackTrace();
-            tx.status = "FAILED";
-            tx.updatedAt = LocalDateTime.now();
-            updateTransactionAtomic(tx);
-
-            // Determine specific error status
-            if (e instanceof jakarta.ws.rs.WebApplicationException) {
-                status = String.valueOf(((jakarta.ws.rs.WebApplicationException) e).getResponse().getStatus());
-            } else if (e.getMessage() != null && e.getMessage().contains("Connection refused")) {
-                status = "503"; // Service Unavailable
-            } else {
-                status = "500"; // Generic Internal Error
+            // 1. Check Idempotency
+            String stored = idempotencyService.getStoredResponse(idempotencyKey);
+            if (stored != null) {
+                LOG.infof("Returning stored response for: %s", idempotencyKey);
+                if ("PROCESSING".equals(stored)) {
+                    return Response.status(102).build();
+                }
+                try {
+                    PaymentResponse cachedResponse = objectMapper.readValue(stored, PaymentResponse.class);
+                    return Response.ok(cachedResponse).build();
+                } catch (Exception e) {
+                    return Response.serverError().build();
+                }
             }
 
-            auditService.sendAuditEvent("PAYMENT_EXECUTION_FAILED", paymentRequest, e.getMessage(),
-                    Map.of("transaction_id", tx.id, "idempotency_key", idempotencyKey));
+            LOG.debug("Step 2: Marking as processing");
+            // 2. Mark as processing
+            idempotencyService.markAsProcessing(idempotencyKey);
 
-            return Response.status(Integer.parseInt(status == "ERROR" ? "500" : status))
-                    .entity(e.getMessage()).build();
+            // 3. Create Transaction record (PENDING)
+            Transaction tx = new Transaction();
+            tx.serviceId = serviceId;
+            tx.customerReference = paymentRequest.getCustomerReference();
+            tx.amount = paymentRequest.getAmount();
+            tx.currency = paymentRequest.getCurrency();
+            tx.idempotencyKey = idempotencyKey;
+            tx.status = "PENDING";
+
+            LOG.debug("Step 3: Initializing transaction in DB");
+            saveTransactionAtomic(tx);
+            MDC.put("trace_id", tx.id.toString());
+
+            try {
+                // 4. Financial Integrity: Debit Account & Record Ledger
+                LOG.infof("Step 4: Executing processDebit for Account: %s", paymentRequest.getAccountId());
+                financialService.processDebit(
+                        paymentRequest.getAccountId(),
+                        BigDecimal.valueOf(paymentRequest.getAmount()),
+                        tx.id);
+
+                // 5. External Integration (Phase 3): Provider Confirmation
+                LOG.debug("Step 5: Calling Service Connector Confirmation...");
+
+                ProviderPayRequest providerRequest = new ProviderPayRequest();
+                providerRequest.service_id = tx.serviceId;
+                providerRequest.transaction_id = tx.id.toString();
+                providerRequest.amount = paymentRequest.getAmount();
+                providerRequest.reference = paymentRequest.getCustomerReference();
+
+                ProviderPayResponse providerResponse = serviceConnectorClient.confirmPayment(providerRequest);
+                tx.providerEndorsement = providerResponse.endorsement;
+                LOG.infof("Provider confirmation received: %s", tx.providerEndorsement);
+
+                // 6. Finalize Transaction
+                tx.status = "COMPLETED";
+                tx.receiptNumber = "REC-" + System.currentTimeMillis();
+                tx.updatedAt = LocalDateTime.now();
+
+                PaymentResponse response = new PaymentResponse();
+                response.setTransactionId(tx.id);
+                response.setStatus(PaymentResponse.StatusEnum.valueOf(tx.status));
+                response.setReceiptNumber(tx.receiptNumber);
+                response.setTimestamp(tx.updatedAt.atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime());
+                response.setEndorsement(tx.providerEndorsement);
+
+                // 7. Emit Kafka Event
+                eventEmitter.send(new com.bank.servicepayment.event.PaymentSucceededEvent(
+                        tx.id, tx.serviceId, tx.customerReference, tx.amount, tx.currency, tx.updatedAt.toString()));
+
+                // 8. Save final result in Idempotency store
+                idempotencyService.saveResult(idempotencyKey, objectMapper.writeValueAsString(response));
+
+                LOG.debug("Finalizing transaction status in DB");
+                updateTransactionAtomic(tx);
+
+                auditService.sendAuditEvent("PAYMENT_EXECUTION_SUCCESSFUL", paymentRequest, response,
+                        Map.of("transaction_id", tx.id, "idempotency_key", idempotencyKey));
+
+                return Response.status(Response.Status.CREATED).entity(response).build();
+
+            } catch (Exception e) {
+                LOG.errorf(e, "Error during payment processing: %s", e.getMessage());
+                tx.status = "FAILED";
+                tx.updatedAt = LocalDateTime.now();
+                updateTransactionAtomic(tx);
+
+                // Determine specific error status
+                if (e instanceof jakarta.ws.rs.WebApplicationException) {
+                    status = String.valueOf(((jakarta.ws.rs.WebApplicationException) e).getResponse().getStatus());
+                } else if (e.getMessage() != null && e.getMessage().contains("Connection refused")) {
+                    status = "503"; // Service Unavailable
+                } else {
+                    status = "500"; // Generic Internal Error
+                }
+
+                auditService.sendAuditEvent("PAYMENT_EXECUTION_FAILED", paymentRequest, e.getMessage(),
+                        Map.of("transaction_id", tx.id, "idempotency_key", idempotencyKey));
+
+                return Response.status(Integer.parseInt(status == "ERROR" ? "500" : status))
+                        .entity(e.getMessage()).build();
+            }
         } finally {
+            MDC.remove("service_id");
+            MDC.remove("trace_id");
             Timer.builder("business_payment_seconds")
                     .tag("service_id", serviceId)
                     .tag("status", status.equals("SUCCESSFUL") ? "201" : status)

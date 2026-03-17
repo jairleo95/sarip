@@ -4,15 +4,367 @@
     "title": "Claro Gateway Timeout",
     "description": "Multiple payment attempts are failing with a 504 Gateway Timeout error when processing transactions through the Claro gateway. Affecting approximately 15% of total traffic.",
     "severity": "high",
-    "status": "reported",
-    "createdAt": "2026-03-12T03:54:09.215Z"
+    "status": "resolved",
+    "createdAt": "2026-03-12T03:54:09.215Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "REJECT_AND_REVERSE_DEBIT",
+      "confidenceScore": 0.85,
+      "requiresHumanApproval": false,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'La queja del cliente menciona un error de tiempo de espera (504 Gateway Timeout) al procesar transacciones a través del gateway de Claro, lo que sugiere una posible falla en la comunicación con AguaCorp. Sin embargo, no se mencionan IDs de transacciones financieras ni recibo específicos.' (Empresa: Claro)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 0 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como TIMEOUT_BUSINESS",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: REJECT_AND_REVERSE_DEBIT (Seguridad: 0.85, Escalar Humano: False)",
+          "timestamp": null
+        }
+      ],
+      "dbContext": {},
+      "traceContext": []
+    }
   },
   {
     "id": "TCK-25223",
     "title": "Error de conciliacion",
     "description": "error en la operacion 1, 2, 3, 4 ,5",
     "severity": "medium",
+    "status": "resolved",
+    "createdAt": "2026-03-15T12:05:49.912Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "REJECT_AND_REVERSE_DEBIT",
+      "confidenceScore": 0.8,
+      "requiresHumanApproval": false,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'TIMEOUT_BUSINESS o REJECTED_ALREADY_PAID' (Empresa: AguaCorp)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 5 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como TIMEOUT_BUSINESS",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: REJECT_AND_REVERSE_DEBIT (Seguridad: 0.80, Escalar Humano: False)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-30684",
+    "title": "Reclamo por cobro fallido Internet-Fibra (Ref: SIM-1773712178338)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773712178338 de la empresa Internet-Fibra por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la aaf3376e-cd3e-4f60-abf3-4bc618d7d720. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "resolved",
+    "createdAt": "2026-03-17T01:49:40.086Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 0.95,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'El cliente intentó pagar su recibo SIM-*********8338 de la empresa Internet-Fibra, pero recibió un error en la aplicación. Se proporciona el UUID de la operación (aaf3376e-cd3e-4f60-abf3-4bc618d7d720).' (Empresa: Internet-Fibra)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-65689",
+    "title": "Reclamo por cobro fallido Movistar (Ref: SIM-1773712178334)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773712178334 de la empresa Movistar por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la e0d97c29-bfbf-4865-a5db-7a2b426f0c64. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
     "status": "reported",
-    "createdAt": "2026-03-15T12:05:49.912Z"
+    "createdAt": "2026-03-17T01:49:40.121Z"
+  },
+  {
+    "id": "TCK-33831",
+    "title": "Reclamo por cobro fallido Banco-Nacion (Ref: SIM-1773712178331)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773712178331 de la empresa Banco-Nacion por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la ac2fd388-1bf1-4eaa-a89d-aaf22bf6bc60. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-17T01:49:40.154Z"
+  },
+  {
+    "id": "TCK-54885",
+    "title": "Error cobor regatas",
+    "description": "desde la empresa de Club-Regatas se efectuo la operacion de pago sin embargo la aplicacion imprimio un error \"error operacion rechazada\". La operacion se dio el dia Mar 16, 2026 @ 22:22:20 aproximadamente. La cuenta es ACC-004. POr favor su apoyo con la revision del caso. Gracias",
+    "severity": "medium",
+    "status": "resolved",
+    "createdAt": "2026-03-17T03:28:07.420Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "REJECT_AND_REVERSE_DEBIT",
+      "confidenceScore": 0.85,
+      "requiresHumanApproval": false,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'La operación se dio el día Mar 16, 2026 @ 22:22:20 aproximadamente. La cuenta es ACC-004.' (Empresa: Club-Regatas)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como TIMEOUT_BUSINESS",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: REJECT_AND_REVERSE_DEBIT (Seguridad: 0.85, Escalar Humano: False)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-43545",
+    "title": "Reclamo por cobro fallido Movistar (Ref: SIM-1773718243691)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773718243691 de la empresa Movistar por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 66954c5d-cd07-4fcf-8017-112c95c88f10. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "resolved",
+    "createdAt": "2026-03-17T03:30:51.593Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 0.95,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'BILL_NOT_FOUND' (Empresa: Movistar)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-49623",
+    "title": "Reclamo por cobro fallido LuzDelSur (Ref: SIM-1773718243688)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773718243688 de la empresa LuzDelSur por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 6821da77-1a45-4906-a15d-e810c8ea4656. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-17T03:30:51.629Z"
+  },
+  {
+    "id": "TCK-92799",
+    "title": "Reclamo por cobro fallido Entel (Ref: SIM-1773718243684)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773718243684 de la empresa Entel por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 58c2a18c-7c7b-4145-9d56-82a2a8d55308. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-17T03:30:51.659Z"
+  },
+  {
+    "id": "TCK-77760",
+    "title": "Reclamo por cobro fallido Club-Regatas (Ref: SIM-99999999)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-99999999 de la empresa Club-Regatas por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 89271aa2-25cb-498d-8d91-70298d3d2059. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-17T04:35:13.781Z"
+  },
+  {
+    "id": "TCK-33689",
+    "title": "Reclamo por cobro fallido Univ-PUCP (Ref: SIM-1773719096238)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773719096238 de la empresa Univ-PUCP por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 9d7699fb-f20e-40f3-91f9-422737dd36a0. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "resolved",
+    "createdAt": "2026-03-17T04:35:13.816Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 0.95,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'BILL_NOT_FOUND' (Empresa: Univ-PUCP)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-65954",
+    "title": "Reclamo por cobro fallido Club-Regatas (Ref: SIM-1773719096234)",
+    "description": "Hola banco, intenté pagar mi recibo SIM-1773719096234 de la empresa Club-Regatas por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 6d645fb0-a48e-49e1-a10a-976c9aa22b60. Mi DNI es 74125896, por favor ayuda.",
+    "severity": "high",
+    "status": "documented",
+    "createdAt": "2026-03-17T04:35:13.846Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 0.95,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'Se encontró un playbook relacionado con telecomunicaciones, pero el ticket no menciona una empresa conocida como Claro o Movistar. Por lo tanto, se asume que la empresa involucrada es Club-Regatas.' (Empresa: Club-Regatas)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-50078",
+    "title": "Cobro fallido Club Regatas",
+    "description": "Hola banco, intente pagar mi recibo de Club Regatas por un monto de 10.0 USD. En mi app salio error pero no se si se proceso. La operacion es la 89271aa2-25cb-498d-8d91-70298d3d2059. La cuenta es ACC-004. Ayuda.",
+    "severity": "high",
+    "status": "closed",
+    "createdAt": "2026-03-17T04:41:20.783Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 0.95,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'Se encontró un match en el playbook de telecomunicaciones, pero no se menciona la empresa Club Regatas. Sin embargo, dado que el ticket se refiere a un recibo y una operación relacionada con pagos, es probable que la empresa sea la misma que la que emitió el recibo.' (Empresa: Club Regatas)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ]
+    }
+  },
+  {
+    "id": "TCK-54111",
+    "title": "Cobro fallido Club Regatas",
+    "description": "Hola banco, intente pagar mi recibo de Club Regatas por un monto de 10.0 USD. En mi app salio error pero no se si se proceso. La operacion es la a221a20c-f1b8-4e8e-a91a-28dc1e59a84e. La cuenta es ACC-004. Ayuda.",
+    "severity": "high",
+    "status": "resolved",
+    "createdAt": "2026-03-17T05:05:39.083Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "REJECT_AND_REVERSE_DEBIT",
+      "confidenceScore": 0.7,
+      "requiresHumanApproval": false,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'La operación mencionada en el ticket es una transacción financiera con un ID único, por lo que se incluye en la lista de operaciones. La empresa aludida en el ticket es Club Regatas.' (Empresa: Club Regatas)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como TIMEOUT_BUSINESS",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: REJECT_AND_REVERSE_DEBIT (Seguridad: 0.70, Escalar Humano: False)",
+          "timestamp": null
+        }
+      ],
+      "dbContext": {},
+      "traceContext": []
+    }
   }
 ]

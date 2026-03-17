@@ -38,18 +38,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-10 max-w-7xl animate-in fade-in duration-700">
-      {/* Hero / Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Reported Incidents" value={cases.length.toString()} change="Local Storage Active" />
-        <StatCard label="System Status" value="Online" change="Ready for input" />
-        <StatCard label="Avg. Resolution" value="N/A" change="Manual Mode" />
-        <StatCard label="Savings (Est.)" value="$0.00" change="This Month" highlight />
-      </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
         {/* Recent Incidents List - REAL DATA */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xl font-bold tracking-tight text-foreground">Reported Payment Incidents</h3>
             <button 
@@ -87,21 +80,6 @@ export default function Home() {
             )}
           </div>
         </div>
-
-        {/* Sidebar / Assistant */}
-        <div className="flex flex-col gap-6">
-          <div className="glass-morphism p-6 rounded-2xl flex flex-col gap-4 border border-border shadow-xl">
-            <h4 className="font-bold flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-              Intelligence Notice
-            </h4>
-            <div className="bg-secondary/40 p-4 rounded-xl text-sm border border-white/5 space-y-3">
-              <p className="text-muted-foreground leading-relaxed">
-                Agent integration is currently <span className="text-foreground font-semibold">disabled</span> as per scope. This dashboard only stores and displays manual reports.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <ReportCaseModal 
@@ -109,16 +87,6 @@ export default function Home() {
         onClose={() => setIsModalOpen(false)} 
         onSuccess={fetchCases}
       />
-    </div>
-  );
-}
-
-function StatCard({ label, value, change, highlight = false }: { label: string; value: string; change: string; highlight?: boolean }) {
-  return (
-    <div className={`p-6 rounded-2xl border border-border glass-morphism card-hover ${highlight ? "bg-primary/5 border-primary/20" : ""}`}>
-      <p className="text-sm font-medium text-muted-foreground mb-1">{label}</p>
-      <h3 className={`text-3xl font-bold tracking-tight mb-2 ${highlight ? "gradient-text" : "text-foreground"}`}>{value}</h3>
-      <p className="text-xs font-semibold text-muted-foreground/80">{change}</p>
     </div>
   );
 }

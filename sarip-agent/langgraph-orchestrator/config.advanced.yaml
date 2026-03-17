@@ -1,0 +1,13 @@
+agents:
+  router:
+    model: "phi3" # Fast, lightweight model for routing and extraction
+    temperature: 0.0
+  evidence_collector:
+    model: "llama3.1" # Good structure and tool calling capabilities
+    temperature: 0.0
+  clasificador:
+    model: "llama3.1:70b" # Heavy reasoning model for complex forensic analysis (or qwen2.5:32b)
+    temperature: 0.0
+  rca_reporter:
+    model: "llama3.1" # Good prose generation for the final executive summary
+    temperature: 0.0

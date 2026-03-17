@@ -1,0 +1,13 @@
+agents:
+  router:
+    model: "gpt-4o-mini" # Fast, cost-effective model for extraction
+    temperature: 0.0
+  evidence_collector:
+    model: "gpt-4o" # Excellent reasoning and tool calling capabilities required here
+    temperature: 0.0
+  clasificador:
+    model: "gpt-4o" # Deep reasoning and large context window needed for forensics
+    temperature: 0.0
+  rca_reporter:
+    model: "gpt-4o-mini" # Capable enough for summarizing and returning the final decision
+    temperature: 0.0

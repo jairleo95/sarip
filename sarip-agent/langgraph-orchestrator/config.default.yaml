@@ -1,0 +1,13 @@
+agents:
+  router:
+    model: "llama3.1"
+    temperature: 0.0
+  evidence_collector:
+    model: "llama3.1"
+    temperature: 0.0
+  clasificador:
+    model: "llama3.1"
+    temperature: 0.0
+  rca_reporter:
+    model: "llama3.1"
+    temperature: 0.0

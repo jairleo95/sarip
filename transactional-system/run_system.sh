@@ -34,8 +34,16 @@ wait_for_service() {
 wait_for_service "http://localhost:8080/q/health" "Payment Orchestrator"
 wait_for_service "http://localhost:8083/q/health" "Audit Service"
 wait_for_service "http://localhost:8084/q/health" "Provider Simulator"
+wait_for_service "http://localhost:5601/api/status" "Kibana"
 
 echo "--- System is Healthy and Ready ---"
+
+echo "Step 3.1: Provisioning Kibana Default Index Pattern..."
+curl -s -X POST "http://localhost:5601/api/saved_objects/index-pattern/service-payment-logs" \
+  -H 'kbn-xsrf: true' \
+  -H 'Content-Type: application/json' \
+  -d '{"attributes":{"title":"service-payment-logs-*","timeFieldName":"@timestamp"}}' > /dev/null
+echo -e "\nKibana Index Pattern configured."
 
 echo "Step 3.5: Seeding test accounts into the database..."
 docker cp seed_accounts.sql payment_db:/tmp/

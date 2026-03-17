@@ -1,0 +1,136 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------< com.bank.servicepayment:payment-orchestrator >------------
+[INFO] Building payment-orchestrator 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] The artifact io.quarkus:quarkus-rest-client-reactive-jackson:jar:3.15.1 has been relocated to io.quarkus:quarkus-rest-client-jackson:jar:3.15.1: Update the artifactId in your project build file. Refer to https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.9 for more information.
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ payment-orchestrator ---
+[INFO] Deleting /home/darkstar/Workspace/dev/service-payment/transactional-system/target
+[INFO] 
+[INFO] --- build-helper:3.6.0:add-source (add-source) @ payment-orchestrator ---
+[INFO] Source directory: /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java added.
+[INFO] 
+[INFO] --- openapi-generator:7.10.0:generate (default) @ payment-orchestrator ---
+[WARNING] Generation using 3.1.0 specs is in development and is not officially supported yet. If you would like to expedite development, please consider working on the open issues in the 3.1.0 project: https://github.com/orgs/OpenAPITools/projects/4/views/1 and reach out to our team on Slack at https://join.slack.com/t/openapi-generator/shared_invite/zt-12jxxd7p2-XUeQM~4pzsU9x~eGLQqX2g
+[INFO] Generating with dryRun=false
+[INFO] Output directory (/home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi) does not exist, or is inaccessible. No file (.openapi-generator-ignore) will be evaluated.
+[INFO] OpenAPI Generator: jaxrs-spec (server)
+[INFO] Generator 'jaxrs-spec' is considered stable.
+[INFO] Environment variable JAVA_POST_PROCESS_FILE not defined so the Java code may not be properly formatted. To define it, try 'export JAVA_POST_PROCESS_FILE="/usr/local/bin/clang-format -i"' (Linux/Mac)
+[INFO] NOTE: To enable file post-processing, 'enablePostProcessFile' must be set to `true` (--enable-post-process-file for CLI).
+[INFO] Invoker Package Name, originally not set, is now derived from api package name: com.bank.servicepayment
+[INFO] Processing operation null
+[INFO] Processing operation null
+[INFO] 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/api/v1]
+[WARNING] Generation using 3.1.0 specs is in development and is not officially supported yet. If you would like to expedite development, please consider working on the open issues in the 3.1.0 project: https://github.com/orgs/OpenAPITools/projects/4/views/1 and reach out to our team on Slack at https://join.slack.com/t/openapi-generator/shared_invite/zt-12jxxd7p2-XUeQM~4pzsU9x~eGLQqX2g
+[INFO] 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/api/v1]
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/dto/DebtInfo.java
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/dto/PaymentRequest.java
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/dto/PaymentResponse.java
+[WARNING] Empty operationId found for path: get /debts. Renamed to auto-generated operationId: debtsGet
+[WARNING] Empty operationId found for path: post /payments. Renamed to auto-generated operationId: paymentsPost
+[INFO] 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/api/v1]
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/api/DebtsApi.java
+[INFO] 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/api/v1]
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/api/PaymentsApi.java
+[INFO] Skipping generation of Webhooks.
+[INFO] 'host' (OAS 2.0) or 'servers' (OAS 3.0) not defined in the spec. Default to [http://localhost] for server URL [http://localhost/api/v1]
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/README.md
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/RestResourceRoot.java
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/pom.xml
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/RestApplication.java
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/main/openapi/openapi.yaml
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/.openapi-generator-ignore
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/.openapi-generator/VERSION
+[INFO] writing file /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/.openapi-generator/FILES
+################################################################################
+# Thanks for using OpenAPI Generator.                                          #
+# Please consider donation to help us maintain this project 🙏                 #
+# https://opencollective.com/openapi_generator/donate                          #
+################################################################################
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ payment-orchestrator ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- quarkus:3.15.1:generate-code (default) @ payment-orchestrator ---
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ payment-orchestrator ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 24 source files with javac [debug parameters release 17] to target/classes
+[INFO] /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/api/DebtsApi.java: Some input files use or override a deprecated API.
+[INFO] /home/darkstar/Workspace/dev/service-payment/transactional-system/target/generated-sources/openapi/src/gen/java/com/bank/servicepayment/api/DebtsApi.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- quarkus:3.15.1:generate-code-tests (default) @ payment-orchestrator ---
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ payment-orchestrator ---
+[INFO] skip non existing resourceDirectory /home/darkstar/Workspace/dev/service-payment/transactional-system/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ payment-orchestrator ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ payment-orchestrator ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.1:jar (default-jar) @ payment-orchestrator ---
+[INFO] Building jar: /home/darkstar/Workspace/dev/service-payment/transactional-system/target/payment-orchestrator-1.0.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- quarkus:3.15.1:build (default) @ payment-orchestrator ---
+[WARNING] [io.quarkus.config.build] The 'quarkus.health.extensions.enabled' config property is deprecated and should not be used anymore
+[WARNING] [io.quarkus.config] Unrecognized configuration key "quarkus.micrometer.binder.http-server.histogram" was provided; it will be ignored; verify that the dependency extension for this configuration is set or that you did not make a typo
+[INFO] [io.quarkus.smallrye-reactive-messaging-kafka.deployment.processor] Generating Jackson serializer for type com.bank.servicepayment.event.PaymentSucceededEvent
+[INFO] [io.quarkus.deployment.QuarkusAugmentor] Quarkus augmentation completed in 6801ms
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  25.841 s
+[INFO] Finished at: 2026-03-16T23:51:39-05:00
+[INFO] ------------------------------------------------------------------------
+#0 building with "default" instance using docker driver
+
+#1 [payment_orchestrator internal] load build definition from Dockerfile.jvm
+#1 transferring dockerfile: 5.75kB 0.0s done
+#1 DONE 0.1s
+
+#2 [payment_orchestrator internal] load metadata for registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24
+#2 DONE 0.6s
+
+#3 [payment_orchestrator internal] load .dockerignore
+#3 transferring context: 114B done
+#3 DONE 0.0s
+
+#4 [payment_orchestrator 1/5] FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24@sha256:e996f340588c7993d6b70cac8efa1f7bd951b1402fcfc02db615a909f02b2600
+#4 CACHED
+
+#5 [payment_orchestrator internal] load build context
+#5 transferring context: 1.52MB 0.2s done
+#5 DONE 0.3s
+
+#6 [payment_orchestrator 2/5] COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
+#6 DONE 2.1s
+
+#7 [payment_orchestrator 3/5] COPY --chown=185 target/quarkus-app/*.jar /deployments/
+#7 DONE 0.2s
+
+#8 [payment_orchestrator 4/5] COPY --chown=185 target/quarkus-app/app/ /deployments/app/
+#8 DONE 0.2s
+
+#9 [payment_orchestrator 5/5] COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+#9 DONE 0.2s
+
+#10 [payment_orchestrator] exporting to image
+#10 exporting layers
+#10 exporting layers 0.4s done
+#10 writing image sha256:9bbfe4656f320620fedb131ffce549396e22ed996de396d4e936fe985da7c9ca 0.0s done
+#10 naming to docker.io/library/transactional-system-payment_orchestrator 0.0s done
+#10 DONE 0.5s
+ Container payment_db  Running
+ Container payment_kafka  Running
+ Container payment_cache  Running
+ Container payment_elasticsearch  Running
+ Container payment_logstash  Running
+ Container payment_orchestrator  Recreate
+ Container payment_orchestrator  Recreated
+ Container payment_orchestrator  Starting
+ Container payment_orchestrator  Started

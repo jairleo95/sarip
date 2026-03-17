@@ -1,0 +1,27 @@
+# Environments
+.env
+.env.local
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and outputs
+*.log
+e2e_results.txt
+
+# Caches
+.cache/
+.pytest_cache/
+
+# Databases
+data/vector_db/
+*.sqlite3

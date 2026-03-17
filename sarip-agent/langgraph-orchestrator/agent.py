@@ -6,11 +6,40 @@ import os
 from dotenv import load_dotenv
 
 from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
+import yaml
+
 # Cargar variables de entorno (API Keys)
 load_dotenv()
+
+USE_OLLAMA = os.getenv("USE_OLLAMA", "false").lower() == "true"
+LLM_CONFIG_FILE = os.getenv("SARIP_LLM_CONFIG", "config.default.yaml")
+
+# Cargar configuración YAML
+config_path = os.path.join(os.path.dirname(__file__), LLM_CONFIG_FILE)
+llm_config = {}
+try:
+    with open(config_path, "r") as f:
+        llm_config = yaml.safe_load(f).get("agents", {})
+except Exception as e:
+    print(f"[Warning] No se pudo cargar {LLM_CONFIG_FILE}: {e}")
+
+def get_llm(agent_name: str = "default", temperature=0.0):
+    """Devuelve el cliente LLM configurado según el agente."""
+    agent_settings = llm_config.get(agent_name, {})
+    temp = agent_settings.get("temperature", temperature)
+    
+    if USE_OLLAMA:
+        model_name = agent_settings.get("model", "llama3.1")
+        print(f"[LLM Config] Usando motor local para {agent_name}: Ollama ({model_name})")
+        return ChatOllama(model=model_name, temperature=temp)
+    else:
+        model_name = agent_settings.get("model", "gpt-4o-mini")
+        print(f"[LLM Config] Usando motor Cloud para {agent_name}: OpenAI ({model_name})")
+        return ChatOpenAI(model=model_name, temperature=temp)
 
 # Schema Estructurado de Salida para el LLM del Router
 class RouterDecision(BaseModel):
@@ -48,17 +77,21 @@ def router_agent(state: TicketState) -> dict:
     # 1. Recuperar contexto rápido (RAG) basado en la descripción
     rag_context = rag_instance.search_playbook(desc, n_results=1)
     
-    # 2. Configurar LLM Ágil (Haiku o GPT-4o-mini según propuesta arquitectónica)
-    # Por defecto usaremos OpenAI para Structured Outputs nativo.
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
+    # 2. Configurar LLM Ágil
+    llm = get_llm("router")
     structured_llm = llm.with_structured_output(RouterDecision)
     
     # 3. Construir el Prompt
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Eres el Router Inicial de SARIP, un sistema de pagos bancario. "
-                   "Tu tarea es leer la queja del cliente y el extracto de los manuales (Knowledge Base). "
-                   "Debes extraer estrictamente los IDs de las transacciones financieras (que suelen tener formato OP-XXX o numérico) "
-                   "y adivinar la empresa de la que se quejan."),
+        ("system", "Eres el Router Inicial de SARIP, un sistema de prevención y resolución de incidentes financieros.\n"
+                   "Tu misión es analizar la queja del cliente y extraer información clave basándote en el extracto del Playbook.\n\n"
+                   "REGLAS DE EXTRACCIÓN:\n"
+                   "1. Extrae estrictamente SOLO los IDs de transacciones financieras (generalmente con prefijos como OP-, TRX-, o números de recibo).\n"
+                   "2. IGNORA números de tarjetas de crédito, DNIs, teléfonos o montos.\n"
+                   "3. Identifica la empresa o proveedor de servicios aludido en el ticket (ej. Claro, Movistar, AguaCorp). Si no se menciona, retorna 'UNKNOWN'.\n\n"
+                   "EJEMPLOS:\n"
+                   "- Ticket: 'Pagué a Movistar el recibo OP-9912 pero sigue saliendo deuda.' -> Ops: ['OP-9912'], Empresa: 'Movistar'\n"
+                   "- Ticket: 'Mi tarjeta 4444... cobró de más en Sedapal.' -> Ops: [], Empresa: 'Sedapal'"),
         ("human", "Ticket de Usuario: {ticket}\n\nConocimiento RAG Encontrado:\n{rag_knowledge}")
     ])
     
@@ -100,16 +133,20 @@ def evidence_collector(state: TicketState) -> dict:
     db_context_gathered = {}
     trace_context_gathered = []
     
-    # 1. Agente LLM decide dinámicamente qué tools necesita (simulado en MVP)
-    # Por rapidez del MVP para cada 'op' consultamos DB y Logs.
-    # En la versión final, un LLM (Claude Haiku) evalúa si necesita ambos o solo uno.
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    # 1. Agente LLM decide dinámicamente qué tools necesita
+    llm = get_llm("evidence_collector")
     structured_llm = llm.with_structured_output(EvidenceDecision)
     
     for op in ops:
         print(f"  > Evaluando herramientas para {op}...")
         try:
-            decision = structured_llm.invoke(f"Se debe investigar la operacion financiera {op}. ¿Qué logs y BD necesitas?")
+            prompt = (f"Eres el Agente Investigador (Evidence Collector). "
+                      f"Tu objetivo es decidir qué herramientas usar para investigar la transacción: {op}.\n"
+                      "REGLAS:\n"
+                      "1. Si es un problema de pago o estado de deuda, SIEMPRE necesitas consultar la Base de Datos (`needs_db_query` = True).\n"
+                      "2. Si el cliente menciona errores, caídas, o 'no cargó la página', requieres consultar Logs (`needs_logs_query` = True).\n"
+                      "Justifica tu decisión brevemente.")
+            decision = structured_llm.invoke(prompt)
             print(f"  > Decisión LLM Collector: DB={decision.needs_db_query}, Logs={decision.needs_logs_query}")
             
             # 2. Invocación Real-Life al MCP Server Proxy
@@ -118,7 +155,7 @@ def evidence_collector(state: TicketState) -> dict:
                 db_context_gathered[op] = db_data
                 
             if decision.needs_logs_query:
-                trace_data = SimpleMCPClient.call_tool("query_application_logs", {"trace_id": f"trace-{op}", "time_window_start": "now-1h", "time_window_end": "now"})
+                trace_data = SimpleMCPClient.call_tool("query_application_logs", {"trace_id": op, "time_window_start": "now-1h", "time_window_end": "now"})
                 trace_context_gathered.append(trace_data)
                 
         except Exception as e:
@@ -156,22 +193,21 @@ def clasificador(state: TicketState) -> dict:
     
     # 3. Prompt Engineering Avanzado (Cognición Forense)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Eres el Clasificador Cognitivo Forense L3 del Banco. "
-                   "Se te entregará la queja del cliente, los registros finales de la Base de Datos Financiera, "
-                   "y los Logs de Splunk de la infraestructura extraídos por el Agente Recolector.\n\n"
-                   "INSTRUCCIONES:\n"
-                   "1. Lee la Knowledge Base (Playbook).\n"
-                   "2. Mapea la evidencia técnica contra los 'Failure Modes Conocidos' del Playbook.\n"
-                   "3. Genera un Timeline cronológico de los eventos.\n"
-                   "4. Determina categóricamente el `failure_mode` exacto."),
-        ("human", "TICKET INICIAL:\n{ticket}\n\n"
-                  "RECORDS BASE DE DATOS LOCALIZADOS:\n{db_data}\n\n"
-                  "LOGS / EXCEPCIONES LOCALIZADAS:\n{trace_data}\n\n"
-                  "PLAYBOOK DE PROCEDIMIENTO:\n{rag_knowledge}")
+        ("system", "Eres el Clasificador Cognitivo Forense L3 del Banco.\n"
+                   "Tu tarea es diagnosticar la causa raíz de un incidente cruzando la evidencia técnica con los 'Failure Modes' oficiales del Playbook.\n\n"
+                   "PASOS:\n"
+                   "1. Lee detenidamente el Playbook y sus Failure Modes.\n"
+                   "2. Analiza el cruce entre los DB Records (estado transaccional) y los Logs (excepciones de sistema).\n"
+                   "3. Construye un timeline cronológico mental.\n"
+                   "4. Determina categóricamente el `failure_mode` EXACTO que hace match con el playbook. No inventes modos de fallo."),
+        ("human", "<ticket>\n{ticket}\n</ticket>\n\n"
+                  "<database_records>\n{db_data}\n</database_records>\n\n"
+                  "<system_logs>\n{trace_data}\n</system_logs>\n\n"
+                  "<official_playbook>\n{rag_knowledge}\n</official_playbook>")
     ])
     
-    # Aquí podríamos usar un modelo más caro (ej. Claude 3.5 Sonnet o GPT-4o) por la ventana de contexto
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    # Usamos el mismo motor dictado por YAML
+    llm = get_llm("clasificador")
     structured_llm = llm.with_structured_output(ClasificadorDecision)
     
     try:
@@ -222,9 +258,10 @@ def rca_reporter(state: TicketState) -> dict:
                    "El equipo forense ha determinado que el fallo fue: '{failure_mode}'.\n"
                    "Tu trabajo es revisar las 'Acciones Recomendadas' en el Playbook para ese fallo y:\n"
                    "1. Determinar la acción exacta a invocar (`recommended_action`).\n"
-                   "2. Calcular matemáticamente tu Confianza (0.0 a 1.0). "
-                   "Si es un caso claro de timeout con playbook claro, dale 0.95. "
-                   "Si la lógica es difusa o falta data, dale 0.5 y pon requires_human_approval=True.\n"
+                   "2. Calcular matemáticamente tu Confianza (0.0 a 1.0) usando esta rúbrica:\n"
+                   "   - 0.95 a 1.0: Evidencia en DB y Logs coincide perfectamente con el Playbook.\n"
+                   "   - 0.70 a 0.94: Falla identificada, pero los logs son parciales o el cliente omitió datos.\n"
+                   "   - < 0.70: Evidencia contradictoria, múltiples fallos, o caso no documentado. (Setea requires_human_approval=True).\n"
                    "3. Escribir un resumen gerencial (executive_summary) para el supervisor humano.\n"
                    "4. Ser conservador con requires_human_approval (True si el Playbook lo decreta expresamente o si confidence < 0.9)."),
         ("human", "FALLA CLASIFICADA: {failure_mode}\n\n"
@@ -232,8 +269,8 @@ def rca_reporter(state: TicketState) -> dict:
                   "PLAYBOOK ACTIVO:\n{rag_knowledge}")
     ])
     
-    # El reporter puede usar un modelo balanceado o avanzado según el costo permitido.
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    # Evaluamos veredicto
+    llm = get_llm("rca_reporter")
     structured_llm = llm.with_structured_output(RcaDecision)
     
     try:

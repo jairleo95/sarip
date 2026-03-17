@@ -1,8 +1,51 @@
-# payment-orchestrator
+# SARIP Ecosystem
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Welcome to the **SARIP (Sistema Automático de Resolución de Incidentes de Pago)**. This repository houses the complete end-to-end architecture, including the transactional systems, the AI agent orchestrator, and the ticketing frontend.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## 🌐 System Portals & GUIs
+
+Below is the list of all graphical interfaces and API documentation portals available when the system is fully running locally:
+
+| Component | URL (Localhost) | Description |
+| :--- | :--- | :--- |
+| **SARIP Ticketing System** | [http://localhost:9999](http://localhost:9999) | Next.js Frontend for human agents to view cases and AI veredicts. |
+| **LangGraph Orchestrator API** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger UI for the FastAPI server coordinating the AI agents. |
+| **MCP Gateway API** | [http://localhost:8080/docs](http://localhost:8080/docs) | Swagger UI for the Model Context Protocol connecting AI to Core DB. |
+| **Grafana Dashboards** | [http://localhost:3000](http://localhost:3000) | Operational metrics for the Transactional System. |
+| **Kibana (Elasticsearch)** | [http://localhost:5601](http://localhost:5601) | Application logs and exceptions explorer. |
+| **Core System (Quarkus Dev UI)** | [http://localhost:8080/q/dev/](http://localhost:8080/q/dev/) | Quarkus developer interface for the main payment orchestrator. |
+
+---
+
+## Technical Documentation
+
+### 🚀 Starting the SARIP Ecosystem
+
+For local development and testing, a unified Bash script is provided to manage the core AI and frontend components simultaneously:
+
+```bash
+# Start FULL ecosystem (Core Transactional System + Next.js + Agents)
+./sarip.sh start-all
+
+# Alternatively, start ONLY the SARIP Agents and UI (if Core is already running)
+./sarip.sh start
+
+# Check the running status and ports of the AI services
+./sarip.sh status
+
+# Restart all AI services (useful after code changes in Python)
+./sarip.sh restart
+
+# Stop ONLY the Agents and UI
+./sarip.sh stop
+
+# Gracefully stop EVERYTHING (SARIP + Docker Compose Core)
+./sarip.sh stop-all
+```
+
+> **Note:** Use `start` if you prefer to keep Docker Compose running constantly but want to restart your Python agents. Use `start-all` for a completely fresh local environment boot.
+
+---
 
 ## Running the application in dev mode
 

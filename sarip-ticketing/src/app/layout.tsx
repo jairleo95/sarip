@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} antialiased min-h-screen flex`}>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased min-h-screen flex`} suppressHydrationWarning>
         {/* Sidebar */}
         <aside className="w-64 border-r border-border p-6 flex flex-col gap-8 glass-morphism hidden md:flex">
           <div className="flex items-center gap-3 px-2">
@@ -28,10 +28,6 @@ export default function RootLayout({
           
           <nav className="flex flex-col gap-2">
             <NavItem label="Dashboard" active />
-            <NavItem label="Incidents" />
-            <NavItem label="Cases" />
-            <NavItem label="Analytics" />
-            <NavItem label="Settings" />
           </nav>
 
           <div className="mt-auto p-4 rounded-xl bg-secondary/50 border border-border">
@@ -51,9 +47,6 @@ export default function RootLayout({
               <h2 className="font-medium">Overview</h2>
             </div>
             <div className="flex items-center gap-4">
-              <button className="px-4 py-2 rounded-lg bg-secondary text-sm font-medium hover:bg-secondary/80 transition-colors">
-                New Ticket
-              </button>
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 border border-white/10 shadow-inner" />
             </div>
           </header>

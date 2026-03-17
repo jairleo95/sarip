@@ -4,3 +4,6 @@ mcp
 pydantic
 sqlalchemy
 aiosqlite
+elasticsearch
+psycopg2-binary
+

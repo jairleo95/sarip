@@ -14,12 +14,16 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
+import org.jboss.logging.MDC;
 
 @Path("/debts")
 @Blocking
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class DebtResource {
+
+    private static final Logger LOG = Logger.getLogger(DebtResource.class);
 
     @Inject
     ServiceConnectorClient serviceConnectorClient;
@@ -36,6 +40,10 @@ public class DebtResource {
 
         long start = System.nanoTime();
         String status = "SUCCESS";
+
+        MDC.put("service_id", serviceId != null ? serviceId : "unknown");
+        MDC.put("customer_reference", customerReference != null ? customerReference : "unknown");
+        LOG.infof("Processing debt inquiry for reference: %s", customerReference);
 
         ProviderDebtRequest request = new ProviderDebtRequest();
         request.service_id = serviceId;
@@ -56,14 +64,19 @@ public class DebtResource {
             auditService.sendAuditEvent("DEBT_INQUIRY", request, info,
                     Map.of("service_id", serviceId, "reference", customerReference));
 
+            LOG.infof("Debt inquiry successful for reference: %s, amount: %s", customerReference, info.getAmount());
+
             return Response.ok(info).build();
         } catch (Exception e) {
             status = "ERROR";
+            LOG.errorf(e, "Error during debt inquiry: %s", e.getMessage());
             auditService.sendAuditEvent("DEBT_INQUIRY_FAILED", request, e.getMessage(),
                     Map.of("service_id", serviceId, "reference", customerReference));
             return Response.status(Response.Status.BAD_GATEWAY).entity("Provider inquiry failed: " + e.getMessage())
                     .build();
         } finally {
+            MDC.remove("service_id");
+            MDC.remove("customer_reference");
             Timer.builder("business_inquiry_seconds")
                     .tag("service_id", serviceId != null ? serviceId : "unknown")
                     .tag("status", status)
