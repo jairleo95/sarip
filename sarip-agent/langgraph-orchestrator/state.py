@@ -27,6 +27,9 @@ class TicketState(BaseModel):
     timeline: List[str] = Field(default_factory=list, description="Historia cronológica de los eventos")
     confidence_score: float = Field(default=0.0, description="Puntuación de 0.0 a 1.0 de confianza de la IA")
     requires_human_approval: bool = Field(default=False, description="Flag de seguridad para escalar a humanos")
+    reviewer_feedback: Optional[str] = Field(default=None, description="Retroalimentación del Agente Evaluador tras un rechazo")
+    revision_count: int = Field(default=0, description="Contador de veces que el dictamen ha sido reevaluado")
+    is_valid: bool = Field(default=False, description="Bandera booleana de aprobación de la IA Supervisora")
     
     # Orquestación y Trazabilidad LangGraph
     next_agent: str = Field(default="", description="Anotación interna para enrutamiento (Edges)")

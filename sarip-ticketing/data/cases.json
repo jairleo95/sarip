@@ -218,8 +218,65 @@
     "title": "Reclamo por cobro fallido Club-Regatas (Ref: SIM-99999999)",
     "description": "Hola banco, intenté pagar mi recibo SIM-99999999 de la empresa Club-Regatas por un monto de 10.0 USD. En mi app salió error pero no sé si se procesó. La operación es la 89271aa2-25cb-498d-8d91-70298d3d2059. Mi DNI es 74125896, por favor ayuda.",
     "severity": "high",
-    "status": "reported",
-    "createdAt": "2026-03-17T04:35:13.781Z"
+    "status": "resolved",
+    "createdAt": "2026-03-17T04:35:13.781Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "Requiere que requires_human_approval sea True",
+      "confidenceScore": 1,
+      "requiresHumanApproval": true,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'BILL_NOT_FOUND' (Empresa: Club-Regatas)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Logs de Sistema (Splunk/ELK) recuperados:\n[\n  {\n    \"logs_found\": 0,\n    \"exceptions\": [],\n    \"source\": \"ELASTICSEARCH_API\",\n    \"message\": \"No error logs matching trace.\"\n  }\n]",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones.",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "reviewer",
+          "action": "Clasificación Rechazada: Rechazo. El agente junior ha asumido que el error es un 'BILL_NOT_FOUND' sin pruebas en los logs o base de datos. La evidencia proporcionada muestra que la API Telecom devuelve un HTTP 404, pero no se indica explícitamente que sea debido a una factura no encontrada.",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como BILL_NOT_FOUND",
+          "timestamp": null
+        },
+        {
+          "agent": "reviewer",
+          "action": "Clasificación Rechazada: Rechazo. El agente junior ha asumido que el error fue un 'BILL_NOT_FOUND' sin pruebas en los logs o base de datos. La evidencia proporcionada muestra que la API Telecom devuelve un HTTP 404, pero no se indica explícitamente que sea debido a una factura no encontrada.",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 1.00, Escalar Humano: True)",
+          "timestamp": null
+        }
+      ],
+      "dbContext": {},
+      "traceContext": [
+        {
+          "logs_found": 0,
+          "exceptions": [],
+          "source": "ELASTICSEARCH_API",
+          "message": "No error logs matching trace."
+        }
+      ]
+    }
   },
   {
     "id": "TCK-33689",

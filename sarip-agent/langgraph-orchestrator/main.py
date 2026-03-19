@@ -11,6 +11,7 @@ workflow = StateGraph(TicketState)
 workflow.add_node("router", agent.router_agent)
 workflow.add_node("evidence_collector", agent.evidence_collector)
 workflow.add_node("clasificador", agent.clasificador)
+workflow.add_node("reviewer_agent", agent.reviewer_agent)
 workflow.add_node("rca_reporter", agent.rca_reporter)
 
 # 3. Definir el flujo Asíncrono Funcional (Edges)
@@ -22,7 +23,22 @@ workflow.set_entry_point("router")
 # el flujo ideal forense es lineal: Evaluar -> Extraer -> Pensar -> Escribir).
 workflow.add_edge("router", "evidence_collector")
 workflow.add_edge("evidence_collector", "clasificador")
-workflow.add_edge("clasificador", "rca_reporter")
+workflow.add_edge("clasificador", "reviewer_agent")
+
+def check_review_status(state: TicketState) -> str:
+    # Si fue aprobado, o si ya alcanzó el límite de reintentos
+    if getattr(state, "is_valid", False) or getattr(state, "revision_count", 0) >= 2:
+        return "rca_reporter"
+    return "clasificador"
+
+workflow.add_conditional_edges(
+    "reviewer_agent",
+    check_review_status,
+    {
+        "rca_reporter": "rca_reporter",
+        "clasificador": "clasificador"
+    }
+)
 
 # Punto de Salida
 workflow.add_edge("rca_reporter", END)
@@ -80,4 +96,5 @@ if __name__ == "__main__":
     print(f"Score (0-1): {estado_final.get('confidence_score')}")
     print(f"Requiere Aprobación Humana: {estado_final.get('requires_human_approval')}")
     print("\nAuditoría Completa de la IA:")
-    print(json.dumps(estado_final.get("audit_trail"), indent=2))
+    audit_trail_dicts = [a.model_dump() if hasattr(a, 'model_dump') else a for a in estado_final.get("audit_trail", [])]
+    print(json.dumps(audit_trail_dicts, indent=2))

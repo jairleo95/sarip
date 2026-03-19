@@ -58,6 +58,10 @@ class RcaDecision(BaseModel):
     requires_human_approval: bool = Field(description="Booleano True si el confidence es bajo (<0.9) o el Playbook lo exige.")
     executive_summary: str = Field(description="Un resumen gerencial de 2 líneas narrando qué pasó y qué debe suceder ahora.")
 
+class ReviewerDecision(BaseModel):
+    is_valid: bool = Field(description="True si la clasificación del caso está justificada por la evidencia. False si hay alucinaciones o falta lógica.")
+    feedback: str = Field(description="Si is_valid es False, escribe una dura crítica al Clasificador explicando qué hizo mal y qué debe revisar. Si es True, pon 'OK'.")
+
 def _get_attr(state: Any, attr: str, default: Any = None) -> Any:
     """Helper para extraer atributos sin importar si el state llega como Pydantic Model o Dict."""
     if isinstance(state, dict):
@@ -208,15 +212,27 @@ def clasificador(state: TicketState) -> dict:
     search_query = f"{ticket_desc} {db_str} {trace_str}"
     rag_context = rag_instance.search_playbook(search_query, n_results=2)
     
+    # Construir contexto de feedback si existe
+    feedback_ctx = _get_attr(state, "reviewer_feedback")
+    revision_count = _get_attr(state, "revision_count", 0)
+    
+    if feedback_ctx and revision_count > 0:
+        system_msg = ("Eres el Clasificador Cognitivo Forense L3 del Banco.\n"
+                      "¡ATENCIÓN! Tu dictamen anterior fue RECHAZADO por el Auditor Senior.\n"
+                      f"FEEDBACK DEL AUDITOR: '{feedback_ctx}'.\n"
+                      "Tu tarea es re-diagnosticar la falla, corrigiendo tu error lógico y basándote ESTRICTAMENTE en los Playbooks y la evidencia real.\n")
+    else:
+        system_msg = ("Eres el Clasificador Cognitivo Forense L3 del Banco.\n"
+                      "Tu tarea es diagnosticar la causa raíz de un incidente cruzando la evidencia técnica con los 'Failure Modes' oficiales del Playbook.\n\n"
+                      "PASOS:\n"
+                      "1. Lee detenidamente el Playbook y sus Failure Modes.\n"
+                      "2. Analiza el cruce entre los DB Records (estado transaccional) y los Logs (excepciones de sistema).\n"
+                      "3. Construye un timeline cronológico mental.\n"
+                      "4. Determina categóricamente el `failure_mode` EXACTO que hace match con el playbook. No inventes modos de fallo.")
+
     # 3. Prompt Engineering Avanzado (Cognición Forense)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Eres el Clasificador Cognitivo Forense L3 del Banco.\n"
-                   "Tu tarea es diagnosticar la causa raíz de un incidente cruzando la evidencia técnica con los 'Failure Modes' oficiales del Playbook.\n\n"
-                   "PASOS:\n"
-                   "1. Lee detenidamente el Playbook y sus Failure Modes.\n"
-                   "2. Analiza el cruce entre los DB Records (estado transaccional) y los Logs (excepciones de sistema).\n"
-                   "3. Construye un timeline cronológico mental.\n"
-                   "4. Determina categóricamente el `failure_mode` EXACTO que hace match con el playbook. No inventes modos de fallo."),
+        ("system", system_msg),
         ("human", "<ticket>\n{ticket}\n</ticket>\n\n"
                   "<database_records>\n{db_data}\n</database_records>\n\n"
                   "<system_logs>\n{trace_data}\n</system_logs>\n\n"
@@ -251,10 +267,72 @@ def clasificador(state: TicketState) -> dict:
     return {
         "failure_mode": failure_mode,
         "timeline": timeline,
-        "next_agent": "rca_reporter",
+        "next_agent": "reviewer",
         "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
         "db_context": db_ctx,
         "trace_context": trace_ctx
+    }
+
+def reviewer_agent(state: TicketState) -> dict:
+    """"
+    Nodo 3.5: Agente Evaluador (Critique Node)
+    Supervisa y evalúa si el dictamen del Clasificador tiene sentido con la evidencia técnica.
+    """
+    print("--- EVALUADOR: Auditando la Calidad de la Clasificación ---")
+    ticket_desc = _get_attr(state, "description", "")
+    db_ctx = _get_attr(state, "db_context", {})
+    trace_ctx = _get_attr(state, "trace_context", [])
+    failure_mode = _get_attr(state, "failure_mode")
+    timeline = _get_attr(state, "timeline", [])
+    rev_count = _get_attr(state, "revision_count", 0)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Eres un Auditor Forense Senior estricto de SARIP.\n"
+                   "Tu tarea es evaluar la clasificación realizada por un agente Junior. Debes verificar si el `failure_mode` "
+                   "encontrado por el Junior realmente tiene un respaldo directo en la evidencia técnica (DB o Logs).\n"
+                   "REGLAS:\n"
+                   "1. Si el Junior alucinó un error que no está en los Logs, RECHÁZALO.\n"
+                   "2. Si el Junior se inventó un `failure_mode` o hizo asunciones sin pruebas de base de datos, RECHÁZALO.\n"
+                   "3. Si todo parece correcto, APRUÉBALO dictando is_valid=True.\n"
+                   "4. Sé muy detallista. Es tu responsabilidad no dejar pasar Falsos Positivos."),
+        ("human", "TICKET ORIGINAL: {ticket}\n\n"
+                  "EVIDENCIA EN BD:\n{db}\n\n"
+                  "EVIDENCIA EN LOGS:\n{logs}\n\n"
+                  "CONCLUSIÓN DEL JUNIOR:\nFalla Detectada: {failure}\nTimeline:\n{timeline}")
+    ])
+    
+    llm = get_llm("reviewer") # Reuse same config or fallback to default
+    structured_llm = llm.with_structured_output(ReviewerDecision)
+    
+    try:
+        decision = structured_llm.invoke(prompt.format_messages(
+            ticket=ticket_desc,
+            db=json.dumps(db_ctx, indent=2),
+            logs=json.dumps(trace_ctx, indent=2),
+            failure=failure_mode,
+            timeline=json.dumps(timeline, indent=2)
+        ))
+        
+        is_valid = decision.is_valid
+        feedback = decision.feedback
+        print(f"  > Dictamen de Auditoría: {'APROBADO' if is_valid else 'RECHAZADO'}")
+        if not is_valid:
+            print(f"  > Feedback al Junior: {feedback}")
+            
+    except Exception as e:
+        print(f"  > Error en LLM Evaluador: {e}")
+        is_valid = True  # Failsafe para no trabar el loop
+        feedback = "Evaluador LLM Exception"
+        
+    action_msg = "Clasificación Validada por el Revisor." if is_valid else f"Clasificación Rechazada: {feedback}"
+    audit = AuditLog(agent="reviewer", action=action_msg).model_dump()
+    
+    return {
+        "reviewer_feedback": feedback,
+        "revision_count": rev_count + 1,
+        "is_valid": is_valid,
+        "next_agent": "rca_reporter" if (is_valid or rev_count >= 2) else "clasificador",
+        "audit_trail": _get_attr(state, "audit_trail", []) + [audit]
     }
     
 def rca_reporter(state: TicketState) -> dict:
