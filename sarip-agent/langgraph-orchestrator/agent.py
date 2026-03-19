@@ -162,14 +162,30 @@ def evidence_collector(state: TicketState) -> dict:
             print(f"  > Error en LLM Collector para {op}: {e}")
     
     # 3. Empaquetar y Auditar
-    audit_msg = f"Evidencia recopilada para {len(ops)} operaciones (DB y Logs)"
-    audit = AuditLog(agent="evidence_collector", action=audit_msg).model_dump()
+    audit_events = []
+    
+    # Agregar detalle técnico de DB al Trail
+    if db_context_gathered:
+        audit_events.append(AuditLog(
+            agent="evidence_collector", 
+            action=f"Base de Datos (Transaccional) recuperada:\n{json.dumps(db_context_gathered, indent=2)}"
+        ).model_dump())
+        
+    # Agregar detalle técnico de Logs al Trail
+    if trace_context_gathered:
+        audit_events.append(AuditLog(
+            agent="evidence_collector", 
+            action=f"Logs de Sistema (Splunk/ELK) recuperados:\n{json.dumps(trace_context_gathered, indent=2)}"
+        ).model_dump())
+        
+    audit_msg = f"Evidencia recopilada para {len(ops)} operaciones."
+    audit_events.append(AuditLog(agent="evidence_collector", action=audit_msg).model_dump())
     
     return {
         "db_context": db_context_gathered,
         "trace_context": trace_context_gathered,
         "next_agent": "clasificador",
-        "audit_trail": _get_attr(state, "audit_trail", []) + [audit] # Preservando historial
+        "audit_trail": _get_attr(state, "audit_trail", []) + audit_events # Preservando historial
     }
 
 def clasificador(state: TicketState) -> dict:
@@ -189,7 +205,8 @@ def clasificador(state: TicketState) -> dict:
     trace_str = json.dumps(trace_ctx, indent=2)
     
     # 2. Re-consultar el Playbook (Opcional, en MVP sirve refrescar la memoria del modelo analítico)
-    rag_context = rag_instance.search_playbook(ticket_desc, n_results=1)
+    search_query = f"{ticket_desc} {db_str} {trace_str}"
+    rag_context = rag_instance.search_playbook(search_query, n_results=2)
     
     # 3. Prompt Engineering Avanzado (Cognición Forense)
     prompt = ChatPromptTemplate.from_messages([
@@ -235,7 +252,9 @@ def clasificador(state: TicketState) -> dict:
         "failure_mode": failure_mode,
         "timeline": timeline,
         "next_agent": "rca_reporter",
-        "audit_trail": _get_attr(state, "audit_trail", []) + [audit]
+        "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
+        "db_context": db_ctx,
+        "trace_context": trace_ctx
     }
     
 def rca_reporter(state: TicketState) -> dict:
@@ -250,7 +269,8 @@ def rca_reporter(state: TicketState) -> dict:
     failure_mode = _get_attr(state, "failure_mode", "UNKNOWN")
     timeline = _get_attr(state, "timeline", [])
     
-    rag_context = rag_instance.search_playbook(ticket_desc, n_results=1)
+    search_query = f"{ticket_desc} {failure_mode} {' '.join(timeline)}"
+    rag_context = rag_instance.search_playbook(search_query, n_results=2)
     
     # Prompt: "Juez Final"
     prompt = ChatPromptTemplate.from_messages([
@@ -306,5 +326,7 @@ def rca_reporter(state: TicketState) -> dict:
         "investigation_complete": True,
         # Opcional: Podríamos embeber el resumen gerencial dentro del state timeline o description en futuras ops.
         "next_agent": "end",
-        "audit_trail": _get_attr(state, "audit_trail", []) + [audit]
+        "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
+        "db_context": _get_attr(state, "db_context", {}),
+        "trace_context": _get_attr(state, "trace_context", [])
     }

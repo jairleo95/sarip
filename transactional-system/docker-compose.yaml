@@ -12,6 +12,19 @@ services:
     networks:
       - payment-network
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: payment_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sarip.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - payment-network
+    depends_on:
+      - postgres
+
   redis:
     image: redis:7
     container_name: payment_cache

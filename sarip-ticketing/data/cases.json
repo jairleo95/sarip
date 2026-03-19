@@ -241,7 +241,12 @@
         },
         {
           "agent": "evidence_collector",
-          "action": "Evidencia recopilada para 1 operaciones (DB y Logs)",
+          "action": "Logs de Sistema (Splunk/ELK) recuperados:\n[\n  {\n    \"logs_found\": 0,\n    \"exceptions\": [],\n    \"source\": \"ELASTICSEARCH_API\",\n    \"message\": \"No error logs matching trace.\"\n  }\n]",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones.",
           "timestamp": null
         },
         {
@@ -254,7 +259,9 @@
           "action": "Caso concluido: Requiere que requires_human_approval sea True (Seguridad: 0.95, Escalar Humano: True)",
           "timestamp": null
         }
-      ]
+      ],
+      "dbContext": {},
+      "traceContext": []
     }
   },
   {
@@ -334,12 +341,12 @@
     "title": "Cobro fallido Club Regatas",
     "description": "Hola banco, intente pagar mi recibo de Club Regatas por un monto de 10.0 USD. En mi app salio error pero no se si se proceso. La operacion es la a221a20c-f1b8-4e8e-a91a-28dc1e59a84e. La cuenta es ACC-004. Ayuda.",
     "severity": "high",
-    "status": "resolved",
+    "status": "documented",
     "createdAt": "2026-03-17T05:05:39.083Z",
     "analysis": {
       "failureMode": null,
-      "recommendedAction": "REJECT_AND_REVERSE_DEBIT",
-      "confidenceScore": 0.7,
+      "recommendedAction": "REJECT_INSUFFICIENT_FUNDS",
+      "confidenceScore": 0.99,
       "requiresHumanApproval": false,
       "auditTrail": [
         {
@@ -354,12 +361,55 @@
         },
         {
           "agent": "clasificador",
-          "action": "Falla clasificada como TIMEOUT_BUSINESS",
+          "action": "Falla clasificada como INSUFFICIENT_FUNDS",
           "timestamp": null
         },
         {
           "agent": "rca_reporter",
-          "action": "Caso concluido: REJECT_AND_REVERSE_DEBIT (Seguridad: 0.70, Escalar Humano: False)",
+          "action": "Caso concluido: REJECT_INSUFFICIENT_FUNDS (Seguridad: 0.99, Escalar Humano: False)",
+          "timestamp": null
+        }
+      ],
+      "dbContext": {},
+      "traceContext": []
+    }
+  },
+  {
+    "id": "TCK-51480",
+    "title": "Problema pagando Claro Pospago",
+    "description": "Intenté pagar mi recibo de Claro por 29.90. Mi número es el TELECOM-999. Me dijo que el recibo no existe o algo así pero el banco igual me debitó (creo). La operacion es: d0dc0253-116c-43dd-a7af-3812053b3b12.",
+    "severity": "high",
+    "status": "documented",
+    "createdAt": "2026-03-17T06:22:47.546Z",
+    "analysis": {
+      "failureMode": null,
+      "recommendedAction": "REJECT_INSUFFICIENT_FUNDS",
+      "confidenceScore": 0.99,
+      "requiresHumanApproval": false,
+      "auditTrail": [
+        {
+          "agent": "router",
+          "action": "ticket_analyzed: Detector LLM: 'Se menciona el recibo de Claro y se proporciona un UUID de operación. Se ignora el número de teléfono ya que no es una transacción financiera.' (Empresa: Claro)",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Logs de Sistema (Splunk/ELK) recuperados:\n[\n  {\n    \"logs_found\": 1,\n    \"exceptions\": [\n      \"[2026-03-17T06:22:45.071Z] com.bank.servicepayment.resource.PaymentResource: Error during payment processing: Insufficient funds in account: ACC-001 \\\\nException: java.lang.RuntimeException: Insufficient funds in account: ACC-001\\n\\tat com.bank.servicepayment.service.FinancialService.processDebit(FinancialService.java:30)\\n\\tat com.bank.servicepayment.service.FinancialService_Subclass.processDebit$$superforward(Unknown Source)\\n\\tat com.bank.servicepayment.service.FinancialService_Subclass$$function$$1.apply(Unknown Source)\\n\\tat io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:73)\\n\\tat io.quarkus.arc.impl.AroundInvokeInvocationContext.proceed(AroundInvokeInvocationContext.java:62)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorBase.invokeInOurTx(TransactionalInterceptorBase.java:136)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorBase.invokeInOurTx(TransactionalInterceptorBase.java:107)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorRequired.doIntercept(TransactionalInterceptorRequired.java:38)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorBase.intercept(TransactionalInterceptorBase.java:61)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorRequired.intercept(TransactionalInterceptorRequired.java:32)\\n\\tat io.quarkus.narayana.jta.runtime.interceptor.TransactionalInterceptorRequired_Bean.intercept(Unknown Source)\\n\\tat io.quarkus.arc.impl.InterceptorInvocation.invoke(InterceptorInvocation.java:42)\\n\\tat io.quarkus.arc.impl.AroundInvokeInvocationContext.perform(AroundInvokeInvocationContext.java:30)\\n\\tat io.quarkus.arc.impl.InvocationContexts.performAroundInvoke(InvocationContexts.java:27)\\n\\tat com.bank.servicepayment.service.FinancialService_Subclass.processDebit(Unknown Source)\\n\\tat com.bank.servicepayment.service.FinancialService_ClientProxy.processDebit(Unknown Source)\\n\\tat com.bank.servicepayment.resource.PaymentResource.paymentsPost(PaymentResource.java:118)\\n\\tat com.bank.servicepayment.resource.PaymentResource$quarkusrestinvoker$paymentsPost_0739d6e9d24bcd3443d46ac5f50bc29dd793b556.invoke(Unknown Source)\\n\\tat org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)\\n\\tat io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:141)\\n\\tat org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:147)\\n\\tat io.quarkus.vertx.core.runtime.VertxCoreRecorder$14.runWith(VertxCoreRecorder.java:635)\\n\\tat org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2516)\\n\\tat org.jboss.threads.EnhancedQueueExecutor$Task.run(EnhancedQueueExecutor.java:2495)\\n\\tat org.jboss.threads.EnhancedQueueExecutor$ThreadBody.run(EnhancedQueueExecutor.java:1521)\\n\\tat org.jboss.threads.DelegatingRunnable.run(DelegatingRunnable.java:11)\\n\\tat org.jboss.threads.ThreadLocalResettingRunnable.run(ThreadLocalResettingRunnable.java:11)\\n\\tat io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)\\n\\tat java.base/java.lang.Thread.run(Thread.java:1474)\\n\"\n    ],\n    \"source\": \"ELASTICSEARCH_API\"\n  }\n]",
+          "timestamp": null
+        },
+        {
+          "agent": "evidence_collector",
+          "action": "Evidencia recopilada para 1 operaciones.",
+          "timestamp": null
+        },
+        {
+          "agent": "clasificador",
+          "action": "Falla clasificada como INSUFFICIENT_FUNDS",
+          "timestamp": null
+        },
+        {
+          "agent": "rca_reporter",
+          "action": "Caso concluido: REJECT_INSUFFICIENT_FUNDS (Seguridad: 0.99, Escalar Humano: False)",
           "timestamp": null
         }
       ],

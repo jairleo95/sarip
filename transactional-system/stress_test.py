@@ -28,7 +28,7 @@ async def send_payment(session, stats):
     payload = {
         "service_id": SERVICE_ID,
         "customer_reference": f"STRESS-{int(time.time()*1000)}",
-        "amount": 1.0,
+        "amount": round(random.uniform(1.0, 100.0), 2),
         "currency": "USD",
         "account_id": account_id
     }

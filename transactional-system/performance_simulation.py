@@ -87,7 +87,7 @@ async def send_payment(session, stats, semaphore):
                 payload = {
                     "service_id": service_id,
                     "customer_reference": customer_ref,
-                    "amount": 10.0,
+                    "amount": round(random.uniform(5.0, 500.0), 2),
                     "currency": "USD",
                     "account_id": account_id
                 }
