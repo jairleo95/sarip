@@ -45,6 +45,21 @@ For local development and testing, a unified Bash script is provided to manage t
 
 > **Note:** Use `start` if you prefer to keep Docker Compose running constantly but want to restart your Python agents. Use `start-all` for a completely fresh local environment boot.
 
+### 🧪 Running Real Data E2E Testing (SARIP)
+
+To test SARIP using organic errors extracted directly from the system's live logs (Elasticsearch), you can run the Real Data Extraction pipeline.
+
+1. **Generate fresh traffic (Optional):** If the system has been idle, simulate some traffic to generate new errors.
+   ```bash
+   cd transactional-system
+   python3 performance_simulation.py 1
+   ```
+2. **Run the Extraction & Resolution Pipeline:** This script queries Elasticsearch, uses Llama 3.1 to synthesize an organic user complaint, and feeds it to the LangGraph Multi-Agent orchestrator.
+   ```bash
+   cd sarip-agent/langgraph-orchestrator
+   .venv/bin/python extract_real_cases.py
+   ```
+
 ---
 
 ## Running the application in dev mode

@@ -82,7 +82,7 @@ def query_application_logs(trace_id: str, time_window_start: str, time_window_en
         "query": {
             "bool": {
                 "must": [
-                    { "match": { "trace_id": trace_id } },
+                    { "term": { "trace_id.keyword": trace_id } },
                     { "match": { "level_name": "ERROR" } }
                 ],
                 "filter": [

@@ -332,7 +332,11 @@ def reviewer_agent(state: TicketState) -> dict:
         "revision_count": rev_count + 1,
         "is_valid": is_valid,
         "next_agent": "rca_reporter" if (is_valid or rev_count >= 2) else "clasificador",
-        "audit_trail": _get_attr(state, "audit_trail", []) + [audit]
+        "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
+        "db_context": db_ctx,
+        "trace_context": trace_ctx,
+        "failure_mode": failure_mode,
+        "timeline": timeline
     }
     
 def rca_reporter(state: TicketState) -> dict:
@@ -401,10 +405,29 @@ def rca_reporter(state: TicketState) -> dict:
         "recommended_action": rca_action,
         "confidence_score": score,
         "requires_human_approval": needs_human,
+        "executive_summary": summary,
         "investigation_complete": True,
-        # Opcional: Podríamos embeber el resumen gerencial dentro del state timeline o description en futuras ops.
         "next_agent": "end",
         "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
         "db_context": _get_attr(state, "db_context", {}),
-        "trace_context": _get_attr(state, "trace_context", [])
+        "trace_context": _get_attr(state, "trace_context", []),
+        "failure_mode": failure_mode,
+        "timeline": timeline
+    }
+
+def human_approval(state: TicketState) -> dict:
+    """
+    Nodo 5: Aprobación Humana (HITL - Human in the Loop)
+    Este nodo está configurado en el Grafo con un `interrupt_before`.
+    La IA NUNCA entrará aquí automáticamente; se quedará pausada esperando que el UI la reanude.
+    Una vez reanudada por un humano, este nodo se ejecuta y deja registro de la aprobación.
+    """
+    print("--- HUMAN IN THE LOOP: Aprobación Recibida ---")
+    
+    audit_msg = "Acción Recomendada Validada y Aprobada por Operador Humano (Nivel 3)."
+    audit = AuditLog(agent="human_supervisor", action=audit_msg).model_dump()
+    
+    return {
+        "investigation_complete": True,
+        "audit_trail": _get_attr(state, "audit_trail", []) + [audit],
     }
