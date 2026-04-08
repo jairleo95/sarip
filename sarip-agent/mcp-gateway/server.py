@@ -120,8 +120,8 @@ def query_application_logs(trace_id: str, time_window_start: str, time_window_en
             message = source.get("message", "Error sin mensaje")
             stack = source.get("StackTrace", "")
             # Truncar stack a 3 líneas útiles
-            short_stack = "\\n".join(stack.split("\\n")[:3])
-            excepciones_reales.append(f"{message} \\nException: {short_stack}")
+            short_stack = "\n".join(stack.split("\n")[:3])
+            excepciones_reales.append(f"{message} \nException: {short_stack}")
             
         return {
             "trace_id": trace_id,
@@ -145,6 +145,123 @@ def search_playbook(company_id: str, error_code_or_symptom: str) -> str:
     """
     print(f"[RAG Mock] Buscando knowledge base para company {company_id} y error {error_code_or_symptom}")
     return "Playbook HINT: Verificar disponibilidad del API Gateway de la aseguradora. Accion recomendada: REJECT_AND_REVERSE."
+
+@mcp.tool()
+def search_codebase(keyword: str) -> str:
+    """
+    Busca una palabra clave (ej. Nombre de Excepción) en el código fuente de Java del sistema transaccional usando grep.
+    Retorna los archivos y líneas donde se encuentra.
+    """
+    import subprocess
+    print(f"[L3 Tool] Buscando en código fuente: {keyword}")
+    cwd = "/home/darkstar/Workspace/dev/service-payment/transactional-system"
+    try:
+        result = subprocess.run(
+            ["grep", "-rnF", keyword, "src/main/java"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        if result.stdout:
+            # Limitar a las primeras 30 líneas para no desbordar el contexto del LLM
+            lines = result.stdout.split("\\n")[:30]
+            return "Hallazgos de código:\\n" + "\\n".join(lines)
+        return "No se encontraron coincidencias en el código fuente de Java."
+    except Exception as e:
+        return f"Error al ejecutar search_codebase: {e}"
+
+@mcp.tool()
+def read_java_source_code(file_path: str, start_line: int, end_line: int) -> str:
+    """
+    Lee un rango de líneas de un archivo Java específico para entender la lógica de negocio.
+    Ejemplo de file_path: src/main/java/com/bank/service/PaymentService.java
+    """
+    import os
+    print(f"[L3 Tool] Leyendo archivo {file_path} líneas {start_line}-{end_line}")
+    full_path = os.path.join("/home/darkstar/Workspace/dev/service-payment/transactional-system", file_path)
+    
+    if not os.path.exists(full_path):
+        return f"Error: El archivo {file_path} no existe."
+        
+    try:
+        with open(full_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            
+        snippet = lines[max(0, start_line-1):end_line]
+        return f"--- Código Fuente: {file_path} (Líneas {start_line}-{end_line}) ---\\n" + "".join(snippet)
+    except Exception as e:
+        return f"Error al leer el archivo: {e}"
+
+@mcp.tool()
+def execute_custom_sql(query: str) -> str:
+    """
+    Ejecuta una consulta SELECT personalizada (Read-Only) en la Base de Datos Core (PostgreSQL) para investigar anomalías transaccionales.
+    """
+    print(f"[L3 Tool] Ejecutando consulta SQL L3: {query}")
+    if "INSERT" in query.upper() or "UPDATE" in query.upper() or "DELETE" in query.upper() or "DROP" in query.upper():
+        return "Error de Seguridad: Solo se permiten consultas SELECT (Read-Only)."
+        
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        
+        # Obtener nombres de columnas
+        colnames = [desc[0] for desc in cur.description]
+        conn.close()
+        
+        if not rows:
+            return "La consulta se ejecutó con éxito pero no devolvió resultados."
+            
+        # Formatear como lista de diccionarios truncada
+        result_list = []
+        for row in rows[:15]: # Limitar a 15 filas
+            result_list.append(dict(zip(colnames, row)))
+            
+        import json
+        return json.dumps(result_list, indent=2, default=str)
+    except Exception as e:
+        return f"Database Error: {e}"
+
+@mcp.tool()
+def check_git_history(file_path: str) -> str:
+    """
+    Revisa el historial reciente de Git para un archivo específico, para ver si un despliegue reciente causó un error.
+    """
+    import subprocess
+    print(f"[L3 Tool] Revisando Git History de: {file_path}")
+    cwd = "/home/darkstar/Workspace/dev/service-payment/transactional-system"
+    try:
+        result = subprocess.run(
+            ["git", "log", "-n", "3", "--oneline", file_path],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.stdout:
+            return "Últimos commits que afectaron este archivo:\\n" + result.stdout
+        return "No hay historial de Git disponible para este archivo o no está bajo control de versiones."
+    except Exception as e:
+        return f"Error al revisar historial de Git: {e}"
+
+@mcp.tool()
+def get_system_metrics() -> str:
+    """
+    Consulta las métricas de sistema (Uso de CPU y Conexiones Activas de DB) para detectar saturaciones de infraestructura simuladas.
+    """
+    print("[L3 Tool] Consultando métricas de Telemetría (Prometheus Mock)")
+    # En un entorno real, esto iría contra el endpoint /api/v1/query de Prometheus
+    # Retornamos un log simulado genérico para propósitos de L3 Analysis
+    return '''
+[Métricas Extraídas]
+- CPU Usage de service-payment: 87% (Alerta de Saturación)
+- Active DB Connections (PostgreSQL): 98/100 (Cerca del Límite de Pool)
+- Latencia Media a Proveedores (P99): 5.2s
+- Estado de los pods de Kubernetes: Todos Running.
+'''
 
 if __name__ == "__main__":
     print("Iniciando SARIP MCP Gateway (FastMCP SSE)...")

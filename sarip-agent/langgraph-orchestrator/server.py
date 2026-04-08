@@ -88,6 +88,23 @@ async def document_case(req: DocumentRequest):
         print(f"Error saving documentation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+class DeepResearchRequest(BaseModel):
+    ticket_context: str
+
+class DeepResearchResponse(BaseModel):
+    report: str
+
+@app.post("/deep_research", response_model=DeepResearchResponse)
+async def deep_research(req: DeepResearchRequest):
+    try:
+        from planner_agent import deep_research_ticket
+        # Ejecuta el agente planificador (puede tomar minutos si es complejo)
+        report = deep_research_ticket(req.ticket_context)
+        return DeepResearchResponse(report=report)
+    except Exception as e:
+        print(f"Error in L3 Planner API: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

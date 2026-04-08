@@ -19,7 +19,7 @@ backgroundColor: #f8f9fa
 - **Alta Volatilidad:** Integración con más de 300 proveedores de servicios (luz, agua, telefonía, etc.) con APIs diversas (REST, SOAP).
 - **Escala Masiva:** Millones de transacciones y conciliaciones diarias.
 - **Incidentes Complejos:** Fallos de red, timeouts, y problemas de conciliación (pagos debitados pero no aplicados).
-- **Carga Operativa:** Los analistas L2 dedican decenas de minutos investigando la causa raíz (RCA) navegando entre bases de datos, logs y herramientas de monitoreo.
+- **Carga Operativa:** Los ingenieros L3 dedican decenas de minutos investigando la causa raíz (RCA) navegando entre bases de datos, logs y herramientas de monitoreo.
 
 ---
 
@@ -59,32 +59,34 @@ Microservicios desacoplados:
 
 # 🧠 2. La Revolución: ¿Qué es SARIP?
 
-**SARIP** es nuestro "Orquestador de Cognición". Funciona de manera paralela al sistema principal, operando como un **Analista de Soporte L2 Autónomo**.
+**SARIP** es nuestro "Orquestador de Cognición" y Enjambre IA. Funciona de manera paralela al sistema principal, operando como un **Ingeniero de Soporte L3 Autónomo**.
 
-- Ingiere los tickets de reclamos desde los canales de soporte (Ej. Jira, ServiceNow).
+- Ingiere los tickets de reclamos complejos desde los canales de soporte (Ej. Jira, ServiceNow).
 - Protege la privacidad del usuario enmascarando los datos sensibles (**PII Masking Engine**).
 - Realiza **investigación forense profunda** consultando el estado real del sistema y cruzándolo de manera inteligente.
 
 ---
 
-# 🤖 El Equipo de Agentes en LangGraph
+# 🤖 El Enjambre L3 (Multi-Agent Swarm)
 
-SARIP orquesta a **cuatro agentes IA especializados** (usando modelos como Claude 3.5 o GPT-4o):
+SARIP orquesta a **un Enjambre de Agentes IA Especializados** trabajando como un equipo (usando modelos como Llama 3.1):
 
-1. **🕵️ Router / Triage:** Clasifica el ticket y deduce qué empresa de servicios está implicada usando la base de conocimiento (Vector DB - RAG).
-2. **🔎 Evidence Collector:** Extrae datos certeros consultando la Base de Datos Transaccional y las plataformas de Logs (Observability).
-3. **🧠 Classifier:** Ingiere todo el ruido devuelto por el recolector, limpia los *stack traces* y mapea la falla contra un catálogo de errores canónicos del banco (Ej: `TIMEOUT_INFRA`).
-4. **⚖️ RCA Reporter (El Juez):** Escribe el *Root Cause Analysis* detallado del incidente, formula un timeline, y entrega un "Case File" sugiriendo la mejor acción mitigadora para que un Humano apruebe (Human Approval Dashboard).
+1. **🧑‍⚖️ Supervisor (Lead Investigator):** Recibe el ticket, evalúa, y delega micro-tareas a sus agentes subordinados usando LangGraph.
+2. **🗄️ DBA Agent:** Experto en Base de Datos. Genera y ejecuta consultas SQL personalizadas en PostgreSQL para conciliar pagos (Read-Only).
+3. **💻 Backend Agent:** Ingeniero Senior Java. Escanea el código fuente (Spring Boot / Quarkus) y revisa el historial de Git para identificar excepciones de negocio.
+4. **⚙️ SRE Agent:** Experto en Site Reliability. Ingiere métricas de Prometheus usando consultas PromQL para identificar cuellos de botella de infraestructura.
+
+El Supervisor reúne la evidencia de todos los trabajadores (Workers) y redacta el *Root Cause Analysis* detallado del incidente, entregando un L3 Forensic Report.
 
 ---
 
-# 🗺️ Arquitectura del Sistema Agéntico
+# 🗺️ Arquitectura del Sistema Agéntico (Swarm)
 
 ![bg right:65% 90%](./assets/sarip_agent_architecture.png)
 
-Un grafo neuronal dirigido:
-- Base de datos Vectorial RAG (Playbooks).
-- Conexión segura al backend bancario a través de un esquema restringido **MCP (Model Context Protocol)**.
+Un grafo neuronal dirigido (LangGraph Supervisor Mode):
+- El Supervisor rutea asíncronamente a los Trabajadores Especializados.
+- Conexión segura al backend bancario, BBDD y Prometheus a través de **múltiples Tools dedicados**.
 
 ---
 
@@ -92,9 +94,9 @@ Un grafo neuronal dirigido:
 
 Implementar IA en el núcleo bancario requiere extremas garantías:
 
-- **Componente MCP Gateway (Java/Quarkus):** Los LLMs **nunca** tienen acceso directo ni contraseñas a las bases de datos. El LLM solo conversa mediante "Funciones/Tools" semánticas con el MCP Server, que hace de firewall aplicando políticas de Solo-Lectura.
-- **Prevención de Alucinaciones:** Exigencia cross-validation (Synthetizer verifica la evidencia del Collector).
-- **Human-In-The-Loop (HITL):** En fases tempranas, SARIP solo prepara el terreno, mientras la aprobación final de un reembolso/conciliación recae siempre en un supervisor humano.
+- **Aislamiento de Funciones (Tools):** Los LLMs **nunca** tienen acceso sin restricciones. Cada agente especializado (DBA, Backend, SRE) está aislado y solo puede invocar funciones predefinidas en Python con políticas de Solo-Lectura (Ej. `execute_custom_sql` prohibe estrictamente comandos `INSERT`, `UPDATE` o `DELETE`).
+- **Validación Cruzada en el Enjambre:** El Supervisor delega tareas y contrasta los resultados de los múltiples agentes antes de emitir un informe.
+- **Human-In-The-Loop (HITL):** SARIP funciona como un copiloto de investigación L3. La aprobación final de una mitigación recae siempre en el ingeniero humano a cargo con base en el *Forensic Report* generado.
 
 ---
 

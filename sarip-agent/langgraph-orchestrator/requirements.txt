@@ -12,3 +12,4 @@ fastapi
 uvicorn
 psycopg2-binary
 pyyaml==6.0.2
+langgraph-checkpoint-sqlite

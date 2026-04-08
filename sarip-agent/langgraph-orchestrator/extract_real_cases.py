@@ -71,7 +71,7 @@ def get_transaction_details(trace_id):
             port="5432"
         )
         cur = conn.cursor()
-        cur.execute("SELECT amount, currency, service_id, account_id FROM transactions WHERE id = %s", (trace_id,))
+        cur.execute("SELECT amount, currency, service_id, target_account FROM transactions WHERE id = %s", (trace_id,))
         row = cur.fetchone()
         conn.close()
         
@@ -172,7 +172,20 @@ def main():
                     print(f"  Acción Recomendada: {analysis_result.get('recommendedAction')} (Score: {analysis_result.get('confidenceScore')})")
                     print(f"  Aprobación Humana: {analysis_result.get('requiresHumanApproval')}")
                     
-                    print(f"\n👉 ¡Ve al portal http://localhost:9999 y busca el ticket {ticket_id} para verlo!")
+                    if analysis_result.get('requiresHumanApproval'):
+                        print(f"\n⚠️ ESCALANDO AUTOMÁTICAMENTE AL SWARM L3...")
+                        try:
+                            res_l3 = httpx.post(f"http://localhost:9999/api/cases/{ticket_id}/deep_research", timeout=600.0)
+                            if res_l3.status_code == 200:
+                                l3_result = res_l3.json()
+                                print(f"\n🐝 [SWARM L3 FORENSIC REPORT]:")
+                                print(l3_result.get('report', l3_result))
+                            else:
+                                print(f"\n[!] Fallo el escalamiento L3: HTTP {res_l3.status_code}")
+                        except Exception as e:
+                            print(f"\n[!] Timeout o Error de Red en el Swarm L3: {e}")
+                    
+                    print(f"\n👉 ¡Ve al portal http://localhost:9999 y busca el ticket {ticket_id} para verificarlo!")
                 else:
                     print(f"[!] Error al analizar en la UI: {res_analyze.status_code}")
             else:

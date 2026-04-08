@@ -654,5 +654,61 @@
     "severity": "high",
     "status": "reported",
     "createdAt": "2026-03-20T23:53:26.023Z"
+  },
+  {
+    "id": "TCK-74141",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: cc9b01)",
+    "description": "¡Estoy completamente furioso! Acabo de intentar pagar un servicio en mi cuenta con la aplicación del banco, pero parece que ha habido un error. El ID de la operación es e6569776-093f-4dbf-8417-229924cc9b01 y el monto involucrado era... bueno, no sé exactamente cuánto, porque el mensaje solo dice \"insuficientes fondos en cuenta\" ¿De qué están hablando?! ¡Es mi dinero que está siendo rechazado!",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-03-24T06:44:39.105Z"
+  },
+  {
+    "id": "TCK-11217",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: dce2ec)",
+    "description": "¡Ay, caramba! Acabo de intentar pagar mi servicio con \"Un Servicio\" a través de la aplicación móvil del banco y ¡hasta ahí llegó! Me salió un error al proceso de pago que dice que no hay suficientes fondos en mi cuenta (ACC-001), pero yo sé que tengo dinero. Por favor, necesito que revisen el ID de Operación 0f2d9c59-2d4f-4556-a238-c1129bdce2ec y me digan qué está pasando con mi pago del monto desconocido a \"Un Servicio\".",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T05:33:39.060Z"
+  },
+  {
+    "id": "TCK-11883",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: a761bd)",
+    "description": "¡Estoy furioso! Acabo de intentar pagar mi servicio \"Un Servicio\" a través de la aplicación móvil del banco, pero me apareció un error insólito. Me dice que no tengo suficientes fondos en cuenta (ACC-005), lo cual es ridículo porque sé que tenía el dinero suficiente. ¿Qué pasa con la transacción? Mi ID de Operación es b4cb3de9-128a-4067-946c-13d306a761bd y estaba pagando un monto desconocido por ese servicio. ¡Por favor, resuelvan esto lo antes posible!",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T06:03:39.347Z"
+  },
+  {
+    "id": "TCK-27508",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: 1d4988)",
+    "description": "¡Estoy furioso! Me he quedado sin servicios de GLP-Hogar porque tu app no funcionó correctamente. Acabo de intentar pagar 380.45 USD a través del servicio móvil y me sale el error: \"Insufficient funds in account: ACC-004\". Mi ID de Operación es d6202322-918c-43ca-af23-553d401d4988, ¿no hay forma de que se resuelva esto de una vez por todas?",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T06:06:10.545Z"
+  },
+  {
+    "id": "TCK-63474",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: c2fb1f)",
+    "description": "¡Estoy enojado! Les informo que al intentar pagar mi servicio de Caja-Piura con la aplicación del banco, me apareció un error al proceso de pago. El monto involucrado era 65.89 USD y el ID de Operacion es 4554ee03-0a39-4082-a803-16b68ac2fb1f. ¡Necesito que lo resuelvan de inmediato!",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T06:34:47.142Z"
+  },
+  {
+    "id": "TCK-79148",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: bc3142)",
+    "description": "¡Ay, caramba! Acabo de intentar pagar mi servicio de Sodexo a través de la app del banco y me ha salido un error absoluto. Me parece que el sistema no tuvo suficiente dinero en cuenta para realizar el pago, que era de 427,24 dólares. Mi ID de Operacion es bad19011-059f-4bec-a544-daaf64bc3142 y espero que me puedan ayudar a resolver esto lo antes posible, ya que estoy muy incomodado con este problema.",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T20:08:57.361Z"
+  },
+  {
+    "id": "TCK-39924",
+    "title": "Fallo Crítico reportado en App Móvil (Operación: 0a5cd2)",
+    "description": "¡Estoy furioso! No puedo creer que me haya fallado la aplicación de nuevo. Acabo de intentar pagar mi servicio de Caja-Piura por valor de 47.14 USD y me dice que no tengo suficientes fondos en mi cuenta (ACC-001). Mi ID de Operacion es e87427f7-f20d-4ed6-a4a5-5a5fe50a5cd2, ¿qué voy a hacer ahora?",
+    "severity": "high",
+    "status": "reported",
+    "createdAt": "2026-04-04T20:38:40.522Z"
   }
 ]

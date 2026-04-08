@@ -3,6 +3,7 @@ import Link from 'next/link';
 import AnalyzeButton from '@/components/AnalyzeButton';
 import ApproveButton from '@/components/ApproveButton';
 import DocumentButton from '@/components/DocumentButton';
+import DeepResearchButton from '@/components/DeepResearchButton';
 
 export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -114,6 +115,11 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
                   SARIP engine has not analyzed this ticket yet. Click the button above to trigger the LangGraph orchestration.
                 </p>
               </div>
+              
+              {/* L3 Fallback Planner ONLY IF HIGH RISK OR UNKNOWN */}
+              {caseData.analysis && ((caseData.analysis as any).requiresHumanApproval || (caseData.analysis as any).failureMode === 'UNKNOWN_ERROR_REQUIRES_HUMAN' || (caseData.analysis as any).failureMode === 'UNKNOWN' || (caseData.analysis as any).confidenceScore < 0.9) && (
+                 <DeepResearchButton caseId={caseData.id} context={caseData.description} />
+              )}
             </div>
           ) : (
             <div className="flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">

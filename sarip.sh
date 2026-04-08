@@ -40,6 +40,54 @@ start_core() {
     echo "✅ Core Bancario iniciado en Docker."
 }
 
+run_system() {
+    local duration=${1:-1}
+    print_header
+    echo "--- Starting Service Payment System Setup (Simulation Mode) ---"
+    cd "$TRANSACTIONAL_DIR"
+    
+    echo "Step 1: Building project artifacts..."
+    ./mvnw clean package -DskipTests
+    
+    echo "Step 2: Launching all services via Docker Compose..."
+    docker compose up -d --build --force-recreate
+    
+    echo "Step 3: Waiting for services to become healthy..."
+    wait_for_service() {
+        local url=$1
+        local name=$2
+        echo "Waiting for $name at $url..."
+        until curl -s "$url" > /dev/null; do
+            printf "."
+            sleep 2
+        done
+        echo -e "\n$name is UP!"
+    }
+    
+    wait_for_service "http://localhost:8080/q/health" "Payment Orchestrator"
+    wait_for_service "http://localhost:8083/q/health" "Audit Service"
+    wait_for_service "http://localhost:8084/q/health" "Provider Simulator"
+    wait_for_service "http://localhost:5601/api/status" "Kibana"
+    
+    echo "--- System is Healthy and Ready ---"
+    
+    echo "Step 3.1: Provisioning Kibana Default Index Pattern..."
+    curl -s -X POST "http://localhost:5601/api/saved_objects/index-pattern/service-payment-logs" \
+      -H 'kbn-xsrf: true' \
+      -H 'Content-Type: application/json' \
+      -d '{"attributes":{"title":"service-payment-logs-*","timeFieldName":"@timestamp"}}' > /dev/null
+    echo -e "\nKibana Index Pattern configured."
+    
+    echo "Step 3.5: Seeding test accounts into the database..."
+    docker cp seed_accounts.sql payment_db:/tmp/
+    docker exec -i payment_db psql -U user -d payment_db -f /tmp/seed_accounts.sql
+    
+    echo "Step 4: Launching traffic simulation (300 TPS) for $duration hour(s)..."
+    nohup python3 performance_simulation.py "$duration" > simulation.log 2>&1 &
+    
+    echo "✅ Simulation Triggered in background (see simulation.log)"
+}
+
 stop_core() {
     print_header
     echo "Deteniendo Sistema Transaccional..."
@@ -162,7 +210,7 @@ case "$1" in
         start_services
         ;;
     start-all)
-        start_core
+        run_system "$2"
         start_services
         ;;
     stop)
@@ -182,6 +230,6 @@ case "$1" in
         ;;
     *)
         echo "Uso incorrecto."
-        echo "Comandos válidos: ./sarip.sh {start|stop|start-all|stop-all|status|restart}"
+        echo "Comandos válidos: ./sarip.sh {start|start-all|stop|stop-all|status|restart} [horas_de_simulación]"
         exit 1
 esac

@@ -1,5 +1,7 @@
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+import os
 from state import TicketState
 import agent
 from pii_masker import mask_pii
@@ -61,8 +63,11 @@ workflow.add_conditional_edges(
 # Punto de Salida definitivo tras intervención humana
 workflow.add_edge("human_approval", END)
 
-# 4. Compilar el Grafo con Checkpointer (Memoria para Pausas)
-memory = MemorySaver()
+# 4. Compilar el Grafo con Checkpointer en Disco (Ahorra RAM)
+DB_URI = os.path.join(os.path.dirname(__file__), "checkpoints.sqlite")
+conn = sqlite3.connect(DB_URI, check_same_thread=False)
+memory = SqliteSaver(conn)
+
 sarip_app = workflow.compile(
     checkpointer=memory, 
     interrupt_before=["human_approval"] # Langgraph se congela antes de entrar aquí
